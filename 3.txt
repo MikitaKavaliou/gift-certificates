@@ -1,1 +1,1 @@
-new version of 3.txt
+non-empty
