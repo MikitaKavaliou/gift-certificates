@@ -1,8 +1,8 @@
 file1
 lineOne
 lineTwo
-line3
-line4
+lineThree
+lineFour
 line5
 line6
 line7
