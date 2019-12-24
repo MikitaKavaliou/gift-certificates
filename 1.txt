@@ -5,6 +5,7 @@ lineThree
 lineFour
 lineFive
 lineSix
-line7
-line8
-line9
+lineSeven
+lineEight
+lineNine
+
