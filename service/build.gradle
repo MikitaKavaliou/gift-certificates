@@ -1,0 +1,8 @@
+dependencies {
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    implementation "org.springframework:spring-tx:${springVersion}"
+    implementation "org.springframework:spring-jdbc:${springVersion}"
+    implementation "javax.annotation:javax.annotation-api:${annotationApiVersion}"
+    implementation project(':repository')
+}
