@@ -16,8 +16,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -31,7 +29,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConnectionPoolImpl implements ConnectionPool {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionPoolImpl.class);
   private static final String CLOSE_CONNECTION_METHOD_NAME = "close";
 
   private final ConnectionPoolConfigurer connectionPoolConfigurer;
@@ -61,9 +58,11 @@ public class ConnectionPoolImpl implements ConnectionPool {
       for (int number = 0; number < poolSize; number++) {
         availableConnections.put(connectionPoolConfigurer.createConnection());
       }
-    } catch (SQLException | InterruptedException e) {
+    } catch (SQLException e) {
+      throw new ConnectionPoolException("SQLException while creating connection pool", e);
+    } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new ConnectionPoolException("Error while creating connection pool", e);
+      throw new ConnectionPoolException("Interrupted while creating connection pool", e);
     }
   }
 
@@ -114,8 +113,11 @@ public class ConnectionPoolImpl implements ConnectionPool {
         Connection connection = availableConnections.take();
         connection.close();
       }
-    } catch (InterruptedException | SQLException e) {
+    } catch (SQLException e) {
+      throw new ConnectionPoolException("SQLException during closing connection", e);
+    } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
+      throw new ConnectionPoolException("Interrupted during closing connection", e);
     }
   }
 
@@ -127,7 +129,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
         DriverManager.deregisterDriver(driver);
       }
     } catch (SQLException e) {
-      LOGGER.error("Error deregister drivers", e);
+      throw new ConnectionPoolException("Interrupted during driver deregister", e);
     }
   }
 
@@ -160,8 +162,11 @@ public class ConnectionPoolImpl implements ConnectionPool {
       try {
         connection = connectionPoolConfigurer.createConnection();
         availableConnections.put(connection);
-      } catch (SQLException | InterruptedException e) {
+      } catch (SQLException e) {
+        throw new ConnectionPoolException("SQLException while adding connection", e);
+      } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
+        throw new ConnectionPoolException("Interrupted while adding connection", e);
       }
     }
 

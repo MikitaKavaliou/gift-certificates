@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 
 /**
- * The type Pooling data source. Pooling implementation of DataSource interface for jdbc template. Uses
- * ConnectionPool for getting database connections.
+ * The type Pooling data source. Pooling implementation of DataSource interface for jdbc template. Uses ConnectionPool
+ * for getting database connections.
  */
 @Component
 public class PoolingDataSource implements DataSource {

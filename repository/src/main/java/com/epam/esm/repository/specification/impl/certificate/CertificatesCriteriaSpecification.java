@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The type Certificates criteria specification. Creates database query for finding certificates by tag names,
- * by part of name/description, sort by date/name DESC/ASC (all params are optional).
+ * The type Certificates criteria specification. Creates database query for finding certificates by tag names, by part
+ * of name/description, sort by date/name DESC/ASC (all params are optional).
  */
 public class CertificatesCriteriaSpecification implements Specification {
 
