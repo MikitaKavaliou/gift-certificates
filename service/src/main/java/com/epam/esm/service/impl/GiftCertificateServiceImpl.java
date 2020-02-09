@@ -1,6 +1,6 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.entity.CertificateWithTags;
+import com.epam.esm.entity.GiftCertificateWithTags;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.GiftCertificate;
@@ -10,11 +10,16 @@ import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.specification.impl.certificate.CertificateIdSpecification;
 import com.epam.esm.repository.specification.impl.certificate.CertificatesCriteriaSpecification;
 import com.epam.esm.repository.specification.impl.tag.TagCertificateIdSpecification;
+import com.epam.esm.repository.specification.impl.tag.TagIdCertificateIdSpecification;
 import com.epam.esm.repository.specification.impl.tag.TagNameSpecification;
 import com.epam.esm.service.GiftCertificateService;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,10 +47,10 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
 
   @Override
-  public CertificateWithTags findById(Long id) {
+  public GiftCertificateWithTags findById(Long id) {
     GiftCertificate giftCertificate = findCertificate(id);
     List<Tag> tags = tagRepository.query(new TagCertificateIdSpecification(id));
-    return new CertificateWithTags(giftCertificate, tags);
+    return new GiftCertificateWithTags(giftCertificate, tags);
   }
 
   private GiftCertificate findCertificate(Long id) {
@@ -57,72 +62,89 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   }
 
   @Override
-  public void delete(Long id) {
-    certificateRepository.delete(id);
+  public int delete(Long id) {
+    return certificateRepository.delete(id);
   }
 
   @Transactional
   @Override
-  public Long create(CertificateWithTags certificateWithTags) {
-    GiftCertificate certificate = certificateWithTags.getGiftCertificate();
-    List<Tag> tags = certificateWithTags.getTags();
-    long certificateId;
+  public Long create(GiftCertificateWithTags giftCertificateWithTags) {
+    GiftCertificate certificate = giftCertificateWithTags.getGiftCertificate();
+    List<Tag> tags = giftCertificateWithTags.getTags();
+    List<Long> listOfTagId = new ArrayList<>();
     if (tags != null) {
-      List<Long> listOfTagsIdForCreation = getTagIdList(tags);
-      certificateId = certificateRepository.create(certificate, listOfTagsIdForCreation);
-    } else {
-      certificateId = certificateRepository.create(certificate);
+      listOfTagId.addAll(createTagIdSetForCreation(tags));
     }
-    return certificateId;
+    return certificateRepository.create(certificate, listOfTagId);
   }
 
   @Transactional
   @Override
-  public Long update(CertificateWithTags certificateWithTags) {
-    GiftCertificate certificate = certificateWithTags.getGiftCertificate();
-    List<Tag> tags = certificateWithTags.getTags();
-    long certificateId;
-    if (tags != null) {
-      List<Long> listOfTagsIdForUpdate = getTagIdList(tags);
-      certificateId = certificateRepository.update(certificate, listOfTagsIdForUpdate);
-    } else {
-      certificateId = certificateRepository.update(certificate);
-    }
-    return certificateId;
+  public Long update(GiftCertificateWithTags giftCertificateWithTags) {
+    List<Long> tagIdListForCreation = findTagIdListForAddingToCertificateWhileUpdating(giftCertificateWithTags);
+    List<Long> tagIdListForDeletion = findTagIdListForDeletingTagFromCertificateWhileUpdating(giftCertificateWithTags);
+    return certificateRepository
+        .update(giftCertificateWithTags.getGiftCertificate(), tagIdListForCreation, tagIdListForDeletion);
   }
 
-  @Override
-  public List<CertificateWithTags> findCertificatesWithTags(Map<String, String> parameters) {
-    List<GiftCertificate> certificates = certificateRepository.query(new CertificatesCriteriaSpecification(parameters));
-    List<CertificateWithTags> certificateTags = new ArrayList<>();
-    for (GiftCertificate certificate : certificates) {
-      List<Tag> tags = tagRepository.query(new TagCertificateIdSpecification(certificate.getId()));
-      certificateTags.add(new CertificateWithTags(certificate, tags));
+  private List<Long> findTagIdListForAddingToCertificateWhileUpdating(GiftCertificateWithTags giftCertificateWithTags) {
+    List<Tag> tagsForCreation = giftCertificateWithTags.getTags();
+    List<Long> tagIdListForCreation = new ArrayList<>();
+    if (tagsForCreation != null) {
+      Set<Long> setOfTagsIdForUpdate = createTagIdSetForCreation(tagsForCreation);
+      removeExistedTagsFromSet(setOfTagsIdForUpdate, giftCertificateWithTags.getId());
+      tagIdListForCreation.addAll(setOfTagsIdForUpdate);
     }
-    return certificateTags;
+    return tagIdListForCreation;
   }
 
-  private List<Long> getTagIdList(List<Tag> tags) {
-    List<Long> tagIdList = new ArrayList<>();
-    for (Tag tag : tags) {
-      searchTagsByName(tag, tagIdList);
+
+  private List<Long> findTagIdListForDeletingTagFromCertificateWhileUpdating(
+      GiftCertificateWithTags giftCertificateWithTags) {
+    List<Tag> tagsForDeletion = giftCertificateWithTags.getTagsForDeletion();
+    Set<Long> tagIdListForDeletion = new HashSet<>();
+    if (tagsForDeletion != null) {
+      tagsForDeletion
+          .forEach(tag -> tagIdListForDeletion.addAll(tagRepository.query
+              (new TagNameSpecification(tag.getName())).stream().map(Tag::getId).collect(Collectors.toSet())));
     }
+    return new ArrayList<>(tagIdListForDeletion);
+  }
+
+  private Set<Long> createTagIdSetForCreation(List<Tag> tags) {
+    Set<Long> tagIdList = new HashSet<>();
+    tags.forEach(t -> searchTagsByName(t, tagIdList));
     return tagIdList;
   }
 
-  private void searchTagsByName(Tag tag, List<Long> tagIdList) {
+  private void searchTagsByName(Tag tag, Set<Long> tagIdSet) {
     List<Tag> foundTags = tagRepository.query(new TagNameSpecification(tag.getName()));
     if (!foundTags.isEmpty()) {
-      addFountTagIdInList(foundTags, tagIdList);
+      tagIdSet.addAll(foundTags.stream().map(Tag::getId).collect(Collectors.toSet()));
     } else {
-      long tagId = tagRepository.create(tag);
-      tagIdList.add(tagId);
+      tagIdSet.add(tagRepository.create(tag));
     }
   }
 
-  private void addFountTagIdInList(List<Tag> foundTags, List<Long> tagIdList) {
-    for (Tag foundTag : foundTags) {
-      tagIdList.add(foundTag.getId());
+  private void removeExistedTagsFromSet(Set<Long> tagIdSet, Long certificateId) {
+    Iterator<Long> iterator = tagIdSet.iterator();
+    while (iterator.hasNext()) {
+      Long tagId = iterator.next();
+      List<Tag> tags = tagRepository.query(new TagIdCertificateIdSpecification(certificateId, tagId));
+      if (!tags.isEmpty()) {
+        iterator.remove();
+      }
     }
+  }
+
+  @Override
+  public List<GiftCertificateWithTags> findCertificatesWithTags(Map<String, String> parameters) {
+    List<GiftCertificate> certificates = certificateRepository.query(new CertificatesCriteriaSpecification(parameters));
+    List<GiftCertificateWithTags> certificateTags = new ArrayList<>();
+    for (GiftCertificate certificate : certificates) {
+      List<Tag> tags = tagRepository.query(new TagCertificateIdSpecification(certificate.getId()));
+      certificateTags.add(new GiftCertificateWithTags(certificate, tags));
+    }
+    return certificateTags;
   }
 }

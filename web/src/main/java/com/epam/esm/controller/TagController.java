@@ -1,14 +1,15 @@
 package com.epam.esm.controller;
 
-import com.epam.esm.builder.ServiceResponseBuilder;
-import com.epam.esm.entity.ServiceResponse;
+import com.epam.esm.entity.TagList;
+import com.epam.esm.exception.ExceptionType;
+import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.Tag;
 import com.epam.esm.service.TagService;
+import com.epam.esm.validation.TagValidator;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -39,20 +39,33 @@ public class TagController {
   }
 
   /**
+   * Create tag service returns response.
+   *
+   * @param tag the tag
+   * @return the service response
+   */
+  @PostMapping()
+  public @ResponseBody
+  ResponseEntity<Tag> createTag(@RequestBody Tag tag) {
+    if (!TagValidator.isValidTag(tag)) {
+      throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
+    }
+    long tagId = tagService.create(tag);
+    Tag createdTag = tagService.findById(tagId);
+    return new ResponseEntity<>(createdTag, HttpStatus.CREATED);
+  }
+
+  /**
    * Find by id service response.
    *
    * @param id the id of requested returns resource
    * @return the service response
    */
-  @ResponseStatus(HttpStatus.OK)
   @GetMapping("/{id}")
   public @ResponseBody
-  ServiceResponse<Tag> findTagById(@PathVariable Long id) {
+  ResponseEntity<Tag> findTagById(@PathVariable Long id) {
     Tag tag = tagService.findById(id);
-    return new ServiceResponseBuilder<Tag>()
-        .status(HttpStatus.OK.toString())
-        .data(tag)
-        .build();
+    return new ResponseEntity<>(tag, HttpStatus.OK);
   }
 
   /**
@@ -60,34 +73,11 @@ public class TagController {
    *
    * @return the service response
    */
-  @ResponseStatus(HttpStatus.OK)
   @GetMapping()
   public @ResponseBody
-  ServiceResponse<List<Tag>> findAllTags() {
+  ResponseEntity<TagList> findAllTags() {
     List<Tag> tags = tagService.findAll();
-    return new ServiceResponseBuilder<List<Tag>>()
-        .status(HttpStatus.OK.toString())
-        .data(tags)
-        .build();
-  }
-
-  /**
-   * Create tag service returns response.
-   *
-   * @param tag      the tag
-   * @param response the response
-   * @param request  the request
-   * @return the service response
-   */
-  @ResponseStatus(HttpStatus.CREATED)
-  @PostMapping()
-  public @ResponseBody
-  ServiceResponse<String> createTag(@RequestBody Tag tag, HttpServletResponse response, HttpServletRequest request) {
-    long tagId = tagService.create(tag);
-    response.setHeader("Location", request.getRequestURL().toString() + "/" + tagId);
-    return new ServiceResponseBuilder<String>()
-        .status(HttpStatus.CREATED.toString())
-        .build();
+    return new ResponseEntity<>(new TagList(tags), HttpStatus.OK);
   }
 
   /**
@@ -96,13 +86,10 @@ public class TagController {
    * @param id the id of deleting entity
    * @return the service response
    */
-  @ResponseStatus(HttpStatus.OK)
   @DeleteMapping("/{id}")
   public @ResponseBody
-  ServiceResponse<String> deleteTag(@PathVariable Long id) {
-    tagService.delete(id);
-    return new ServiceResponseBuilder<String>()
-        .status(HttpStatus.OK.toString())
-        .build();
+  ResponseEntity<Void> deleteTag(@PathVariable Long id) {
+    int numberOfDeletedRows = tagService.delete(id);
+    return numberOfDeletedRows > 0 ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 }

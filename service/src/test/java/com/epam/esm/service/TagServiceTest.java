@@ -1,6 +1,10 @@
 package com.epam.esm.service;
 
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.Tag;
 import com.epam.esm.repository.TagRepository;
@@ -17,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -32,7 +35,7 @@ public class TagServiceTest {
   public void findByIdFoundCorrectTag() {
     Tag expected = new Tag(1L, "1");
     List<Tag> tags = Collections.singletonList(expected);
-    Mockito.when(tagRepository.query(Mockito.any(TagIdSpecification.class))).thenReturn(tags);
+    when(tagRepository.query(any(TagIdSpecification.class))).thenReturn(tags);
     Tag actual = tagService.findById(1L);
     Assert.assertEquals(expected, actual);
   }
@@ -40,7 +43,7 @@ public class TagServiceTest {
   @Test(expected = ServerException.class)
   public void findByIdThrowsException() {
     List<Tag> tags = new ArrayList<>();
-    Mockito.when(tagRepository.query(Mockito.any(TagIdSpecification.class))).thenReturn(tags);
+    when(tagRepository.query(any(TagIdSpecification.class))).thenReturn(tags);
     tagService.findById(1L);
   }
 
@@ -49,7 +52,7 @@ public class TagServiceTest {
     Tag firstTag = new Tag(1L, "1");
     Tag secondTag = new Tag(2L, "2");
     List<Tag> expected = Arrays.asList(firstTag, secondTag);
-    Mockito.when(tagRepository.query(Mockito.any(AllTagsSpecification.class))).thenReturn(expected);
+    when(tagRepository.query(any(AllTagsSpecification.class))).thenReturn(expected);
     List<Tag> actual = tagService.findAll();
     Assert.assertEquals(expected, actual);
   }
@@ -58,8 +61,8 @@ public class TagServiceTest {
   public void createCreatesNewTagAndReturningItsId() {
     long expectedTagId = 1;
     Tag tag = new Tag(expectedTagId, "1");
-    Mockito.when(tagRepository.query(Mockito.any(TagNameSpecification.class))).thenReturn(new ArrayList<>());
-    Mockito.when(tagRepository.create(tag)).thenReturn(expectedTagId);
+    when(tagRepository.query(any(TagNameSpecification.class))).thenReturn(new ArrayList<>());
+    when(tagRepository.create(tag)).thenReturn(expectedTagId);
     long actualTagId = tagService.create(tag);
     Assert.assertEquals(expectedTagId, actualTagId);
   }
@@ -69,7 +72,7 @@ public class TagServiceTest {
     long expectedTagId = 1;
     Tag tag = new Tag(expectedTagId, "1");
     List<Tag> tagList = Collections.singletonList(tag);
-    Mockito.when(tagRepository.query(Mockito.any(TagNameSpecification.class))).thenReturn(tagList);
+    when(tagRepository.query(any(TagNameSpecification.class))).thenReturn(tagList);
     long actualTagId = tagService.create(tag);
     Assert.assertEquals(expectedTagId, actualTagId);
   }
@@ -78,6 +81,6 @@ public class TagServiceTest {
   public void deleteCorrectMethodCall() {
     long tagId = 1L;
     tagService.delete(tagId);
-    Mockito.verify(tagRepository).delete(1L);
+    verify(tagRepository).delete(1L);
   }
 }

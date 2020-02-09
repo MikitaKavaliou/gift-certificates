@@ -12,19 +12,12 @@ import java.util.List;
 public interface GenericRepository<T, K> {
 
   /**
-   * Create entity in database returns k.
-   *
-   * @param entity the entity for creation
-   * @return the k id of created entity
-   */
-  K create(T entity);
-
-  /**
    * Delete.
    *
    * @param id the id of deleting entity
+   * @return the number of deleted rows
    */
-  void delete(K id);
+  int delete(K id);
 
   /**
    * Query list.

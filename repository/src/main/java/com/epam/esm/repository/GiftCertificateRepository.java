@@ -19,19 +19,11 @@ public interface GiftCertificateRepository extends GenericRepository<GiftCertifi
   Long create(GiftCertificate giftCertificate, List<Long> tagIdList);
 
   /**
-   * Update gift certificates returns id long.
-   *
-   * @param giftCertificate the gift certificate
-   * @return the id of updated entity long
-   */
-  Long update(GiftCertificate giftCertificate);
-
-  /**
    * Update gift certificates with tags returns id long.
    *
-   * @param giftCertificate the gift giftCertificate
-   * @param tagIdList       the tag id list
+   * @param giftCertificate    the gift giftCertificate
+   * @param tagIdListForAdding the tag id list
    * @return the id of updated entity long
    */
-  Long update(GiftCertificate giftCertificate, List<Long> tagIdList);
+  Long update(GiftCertificate giftCertificate, List<Long> tagIdListForAdding, List<Long> tagIdListForDeletion);
 }

@@ -5,7 +5,9 @@ public enum ExceptionType {
   NOT_FOUND_HANDLER("Resource not found", 404, 40402),
   INTERNAL_SERVER_ERROR("Internal server error", 500, 50001),
   MESSAGE_NOT_READABLE("Message not readable", 400, 40001),
-  METHOD_ARGUMENT_TYPE_MISMATCH("Method argument type mismatch", 400, 40002);
+  CONTENT_TYPE_NOT_SUPPORTED("Content type not supported", 400, 40002),
+  METHOD_ARGUMENT_TYPE_MISMATCH("Method argument type mismatch", 400, 40003),
+  INCORRECT_INPUT_DATA("Incorrect input data", 400, 40004);
 
   private String message;
   private int httpErrorCode;

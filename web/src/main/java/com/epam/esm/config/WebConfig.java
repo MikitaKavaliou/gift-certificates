@@ -1,5 +1,6 @@
 package com.epam.esm.config;
 
+import com.epam.esm.interceptor.ContentTypeInterceptor;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 import org.springframework.context.annotation.ComponentScan;
@@ -9,6 +10,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -28,5 +30,10 @@ public class WebConfig implements WebMvcConfigurer {
     builder.serializationInclusion(JsonInclude.Include.NON_NULL);
     converters.add(new MappingJackson2HttpMessageConverter(builder.build()));
     converters.add(new Jaxb2RootElementHttpMessageConverter());
+  }
+
+  @Override
+  public void addInterceptors(InterceptorRegistry registry) {
+    registry.addInterceptor(new ContentTypeInterceptor());
   }
 }

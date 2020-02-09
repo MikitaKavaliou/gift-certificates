@@ -1,15 +1,16 @@
 package com.epam.esm.controller;
 
-import com.epam.esm.builder.ServiceResponseBuilder;
-import com.epam.esm.entity.CertificateWithTags;
-import com.epam.esm.entity.ServiceResponse;
+import com.epam.esm.entity.GiftCertificateWithTags;
+import com.epam.esm.entity.GiftCertificatesList;
+import com.epam.esm.exception.ExceptionType;
+import com.epam.esm.exception.ServerException;
 import com.epam.esm.service.GiftCertificateService;
+import com.epam.esm.validation.GiftCertificateWithTagsValidator;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -44,44 +44,19 @@ public class GiftCertificateController {
   /**
    * Create gift certificate with tags returns service response.
    *
-   * @param certificateWithTags the certificate with tags
-   * @param response            the response
-   * @param request             the request
+   * @param giftCertificateWithTags the certificate with tags
    * @return the service response
    */
-  @ResponseStatus(HttpStatus.CREATED)
   @PostMapping()
   public @ResponseBody
-  ServiceResponse<String> createCertificate(@RequestBody CertificateWithTags certificateWithTags,
-      HttpServletResponse response, HttpServletRequest request) {
-    long certificateId = certificateService.create(certificateWithTags);
-    response.setHeader("Location", request.getRequestURL().toString() + "/" + certificateId);
-    return new ServiceResponseBuilder<String>()
-        .status(HttpStatus.CREATED.toString())
-        .build();
-  }
-
-  /**
-   * Update certificate with tags returns service response.
-   *
-   * @param id                  the id of updating resource
-   * @param certificateWithTags the certificate with tags
-   * @param response            the response
-   * @param request             the request
-   * @return the service response
-   */
-  @ResponseStatus(HttpStatus.OK)
-  @PatchMapping("/{id}")
-  public @ResponseBody
-  ServiceResponse<String> updateCertificate(@PathVariable Long id,
-      @RequestBody CertificateWithTags certificateWithTags,
-      HttpServletResponse response, HttpServletRequest request) {
-    certificateWithTags.setId(id);
-    certificateService.update(certificateWithTags);
-    response.setHeader("Location", request.getRequestURL().toString());
-    return new ServiceResponseBuilder<String>()
-        .status(HttpStatus.OK.toString())
-        .build();
+  ResponseEntity<GiftCertificateWithTags> createCertificate(
+      @RequestBody GiftCertificateWithTags giftCertificateWithTags) {
+    if (!GiftCertificateWithTagsValidator.isValidGiftCertificate(giftCertificateWithTags)) {
+      throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
+    }
+    long certificateId = certificateService.create(giftCertificateWithTags);
+    GiftCertificateWithTags createdGiftCertificateWithTags = certificateService.findById(certificateId);
+    return new ResponseEntity<>(createdGiftCertificateWithTags, HttpStatus.CREATED);
   }
 
   /**
@@ -90,15 +65,11 @@ public class GiftCertificateController {
    * @param id the id of requested resource
    * @return the service response
    */
-  @ResponseStatus(HttpStatus.OK)
   @GetMapping("/{id}")
   public @ResponseBody
-  ServiceResponse<CertificateWithTags> findCertificateById(@PathVariable Long id) {
-    CertificateWithTags certificate = certificateService.findById(id);
-    return new ServiceResponseBuilder<CertificateWithTags>()
-        .status(HttpStatus.OK.toString())
-        .data(certificate)
-        .build();
+  ResponseEntity<GiftCertificateWithTags> findCertificateById(@PathVariable Long id) {
+    GiftCertificateWithTags giftCertificateWithTags = certificateService.findById(id);
+    return new ResponseEntity<>(giftCertificateWithTags, HttpStatus.OK);
   }
 
   /**
@@ -107,15 +78,31 @@ public class GiftCertificateController {
    * @param parameters the parameters
    * @return the service response
    */
-  @ResponseStatus(HttpStatus.OK)
   @GetMapping()
   public @ResponseBody
-  ServiceResponse<List<CertificateWithTags>> findAllCertificates(@RequestParam Map<String, String> parameters) {
-    List<CertificateWithTags> certificateTags = certificateService.findCertificatesWithTags(parameters);
-    return new ServiceResponseBuilder<List<CertificateWithTags>>()
-        .status(HttpStatus.OK.toString())
-        .data(certificateTags)
-        .build();
+  ResponseEntity<GiftCertificatesList> findAllCertificates(@RequestParam Map<String, String> parameters) {
+    List<GiftCertificateWithTags> certificatesWithTags = certificateService.findCertificatesWithTags(parameters);
+    return new ResponseEntity<>(new GiftCertificatesList(certificatesWithTags), HttpStatus.OK);
+  }
+
+  /**
+   * Update certificate with tags returns service response.
+   *
+   * @param id                      the id of updating resource
+   * @param giftCertificateWithTags the certificate with tags
+   * @return the service response
+   */
+  @PatchMapping("/{id}")
+  public @ResponseBody
+  ResponseEntity<GiftCertificateWithTags> updateCertificate(@PathVariable Long id,
+      @RequestBody GiftCertificateWithTags giftCertificateWithTags) {
+    if (!GiftCertificateWithTagsValidator.isValidGiftCertificate(giftCertificateWithTags)) {
+      throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
+    }
+    giftCertificateWithTags.setId(id);
+    long certificateId = certificateService.update(giftCertificateWithTags);
+    GiftCertificateWithTags updatedGiftCertificateWithTags = certificateService.findById(certificateId);
+    return new ResponseEntity<>(updatedGiftCertificateWithTags, HttpStatus.OK);
   }
 
   /**
@@ -124,13 +111,10 @@ public class GiftCertificateController {
    * @param id the id of deleting resource
    * @return the service response
    */
-  @ResponseStatus(HttpStatus.OK)
   @DeleteMapping("/{id}")
   public @ResponseBody
-  ServiceResponse<String> deleteCertificate(@PathVariable Long id) {
-    certificateService.delete(id);
-    return new ServiceResponseBuilder<String>()
-        .status(HttpStatus.OK.toString())
-        .build();
+  ResponseEntity<Void> deleteCertificate(@PathVariable Long id) {
+    int numberOfDeletedRows = certificateService.delete(id);
+    return numberOfDeletedRows > 0 ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 }

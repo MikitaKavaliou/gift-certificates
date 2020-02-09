@@ -31,6 +31,8 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
   private static final String DELETE_CERTIFICATE_QUERY = "DELETE FROM gift_certificate WHERE gift_certificate_id = ? ";
   private static final String CREATE_XREF_TABLE_RECORD =
       "INSERT INTO tag_gift_certificate (tag_id, gift_certificate_id) VALUES (?, ?)";
+  private static final String DELETE_XREF_TABLE_RECORD =
+      "DELETE FROM tag_gift_certificate WHERE tag_id = ? AND gift_certificate_id = ?";
   private static final String START_OF_UPDATE_QUERY = "UPDATE gift_certificate SET ";
   private static final String COMMA = ", ";
   private static final String UPDATE_NAME = "name = ? ";
@@ -68,26 +70,18 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
   }
 
   @Override
-  public Long create(GiftCertificate giftCertificate) {
-    return createGiftCertificate(giftCertificate);
-  }
-
-  @Override
-  public Long update(GiftCertificate giftCertificate) {
-    return updateGiftCertificate(giftCertificate);
-  }
-
-  @Override
   public Long create(GiftCertificate giftCertificate, List<Long> tagIdList) {
     Long giftCertificateId = createGiftCertificate(giftCertificate);
-    createCrossReferenceTableRecords(giftCertificateId, tagIdList);
+    batchUpdateCrossReferenceTableRecords(CREATE_XREF_TABLE_RECORD, giftCertificateId, tagIdList);
     return giftCertificateId;
   }
 
   @Override
-  public Long update(GiftCertificate giftCertificate, List<Long> tagIdList) {
+  public Long update(GiftCertificate giftCertificate, List<Long> tagIdListForCreation,
+      List<Long> tagIdListForDeletion) {
     Long giftCertificateId = updateGiftCertificate(giftCertificate);
-    createCrossReferenceTableRecords(giftCertificateId, tagIdList);
+    batchUpdateCrossReferenceTableRecords(CREATE_XREF_TABLE_RECORD, giftCertificateId, tagIdListForCreation);
+    batchUpdateCrossReferenceTableRecords(DELETE_XREF_TABLE_RECORD, giftCertificateId, tagIdListForDeletion);
     return giftCertificateId;
   }
 
@@ -116,8 +110,8 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
   }
 
   @Override
-  public void delete(Long id) {
-    jdbcTemplate.update(DELETE_CERTIFICATE_QUERY, id);
+  public int delete(Long id) {
+    return jdbcTemplate.update(DELETE_CERTIFICATE_QUERY, id);
   }
 
   @Override
@@ -150,8 +144,8 @@ public class GiftCertificateRepositoryImpl implements GiftCertificateRepository 
     return sb;
   }
 
-  private void createCrossReferenceTableRecords(Long certificateId, List<Long> tagIdList) {
-    jdbcTemplate.batchUpdate(CREATE_XREF_TABLE_RECORD,
+  private void batchUpdateCrossReferenceTableRecords(String requestString, Long certificateId, List<Long> tagIdList) {
+    jdbcTemplate.batchUpdate(requestString,
         new BatchPreparedStatementSetter() {
           @Override
           public void setValues(PreparedStatement ps, int i) throws SQLException {

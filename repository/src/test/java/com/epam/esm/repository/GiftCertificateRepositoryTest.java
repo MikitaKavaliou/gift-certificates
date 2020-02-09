@@ -115,7 +115,7 @@ public class GiftCertificateRepositoryTest {
   public void createCertificateTest() {
     long expectedId = 14;
     GiftCertificate giftCertificate = giftCertificates.get(0);
-    giftCertificateRepository.create(giftCertificate);
+    giftCertificateRepository.create(giftCertificate, new ArrayList<>());
     List<GiftCertificate> certificates = giftCertificateRepository.query(new CertificateIdSpecification(expectedId));
     long actualId = certificates.get(0).getId();
     Assert.assertEquals(expectedId, actualId);
@@ -147,7 +147,7 @@ public class GiftCertificateRepositoryTest {
     long certificateId = giftCertificate.getId();
     giftCertificate.setName(expectedNewCertificateName);
     giftCertificate.setDescription(null);
-    giftCertificateRepository.update(giftCertificate);
+    giftCertificateRepository.update(giftCertificate, new ArrayList<>(), new ArrayList<>());
     List<GiftCertificate> certificates = giftCertificateRepository.query(new CertificateIdSpecification(certificateId));
     String actualCertificateName = certificates.get(0).getName();
     Assert.assertEquals(expectedNewCertificateName, actualCertificateName);
@@ -158,7 +158,7 @@ public class GiftCertificateRepositoryTest {
     GiftCertificate giftCertificate = new GiftCertificate();
     giftCertificate.setId(giftCertificates.get(1).getId());
     List<Long> tagIdList = Collections.singletonList(tags.get(0).getId());
-    giftCertificateRepository.update(giftCertificate, tagIdList);
+    giftCertificateRepository.update(giftCertificate, tagIdList, new ArrayList<>());
     List<Tag> tagList = tagRepository.query(new TagCertificateIdSpecification(giftCertificate.getId()));
     int tagListExpectedSize = 4;
     int tagListActualSize = tagList.size();
@@ -174,19 +174,9 @@ public class GiftCertificateRepositoryTest {
   }
 
   @Test
-  public void certificatesCriteriaSpecificationWithSearchFieldWithoutSearchFieldValue() {
+  public void certificatesCriteriaSpecificationWithSearchValue() {
     Map<String, String> stringMap = new HashMap<>();
-    stringMap.put("searchField", "name");
-    List<GiftCertificate> actualList =
-        giftCertificateRepository.query(new CertificatesCriteriaSpecification(stringMap));
-    Assert.assertEquals(giftCertificates, actualList);
-  }
-
-  @Test
-  public void certificatesCriteriaSpecificationWithSearchField() {
-    Map<String, String> stringMap = new HashMap<>();
-    stringMap.put("searchField", "name");
-    stringMap.put("searchFieldValue", "rent");
+    stringMap.put("searchValue", "rent");
     List<GiftCertificate> expectedList = Collections.singletonList(giftCertificates.get(1));
     List<GiftCertificate> actualList =
         giftCertificateRepository.query(new CertificatesCriteriaSpecification(stringMap));
@@ -194,11 +184,19 @@ public class GiftCertificateRepositoryTest {
   }
 
   @Test
-  public void certificatesCriteriaSpecificationWithSingleTagAndSearchField() {
+  public void certificatesCriteriaSpecificationWithMultipleSearchValues() {
+    Map<String, String> stringMap = new HashMap<>();
+    stringMap.put("searchValue", "rent other");
+    List<GiftCertificate> expectedList = Collections.singletonList(giftCertificates.get(1));
+    List<GiftCertificate> actualList =
+        giftCertificateRepository.query(new CertificatesCriteriaSpecification(stringMap));
+    Assert.assertEquals(expectedList, actualList);
+  }
+
+  @Test
+  public void certificatesCriteriaSpecificationWithSingleTag() {
     Map<String, String> stringMap = new HashMap<>();
     stringMap.put("tag", "rent");
-    stringMap.put("searchField", "name");
-    stringMap.put("searchFieldValue", "rent");
     List<GiftCertificate> expectedList = Collections.singletonList(giftCertificates.get(1));
     List<GiftCertificate> actualList =
         giftCertificateRepository.query(new CertificatesCriteriaSpecification(stringMap));
@@ -206,25 +204,13 @@ public class GiftCertificateRepositoryTest {
   }
 
   @Test
-  public void certificatesCriteriaSpecificationWithMultipleTagsAndSearchField() {
+  public void certificatesCriteriaSpecificationWithMultipleTags() {
     Map<String, String> stringMap = new HashMap<>();
     stringMap.put("tag", "rent car");
-    stringMap.put("searchField", "name");
-    stringMap.put("searchFieldValue", "rent");
     List<GiftCertificate> expectedList = Collections.singletonList(giftCertificates.get(1));
     List<GiftCertificate> actualList =
         giftCertificateRepository.query(new CertificatesCriteriaSpecification(stringMap));
     Assert.assertEquals(expectedList, actualList);
-  }
-
-  @Test
-  public void certificatesCriteriaSpecificationWithWrongSearchField() {
-    Map<String, String> stringMap = new HashMap<>();
-    stringMap.put("sortField", "wrong SearchField");
-    stringMap.put("searchFieldValue", "rent");
-    List<GiftCertificate> actualList =
-        giftCertificateRepository.query(new CertificatesCriteriaSpecification(stringMap));
-    Assert.assertEquals(giftCertificates, actualList);
   }
 
   @Test

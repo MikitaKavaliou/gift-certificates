@@ -1,6 +1,12 @@
 package com.epam.esm.service;
 
-import com.epam.esm.entity.CertificateWithTags;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.epam.esm.entity.GiftCertificateWithTags;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
@@ -9,6 +15,7 @@ import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.specification.impl.certificate.CertificateIdSpecification;
 import com.epam.esm.repository.specification.impl.certificate.CertificatesCriteriaSpecification;
 import com.epam.esm.repository.specification.impl.tag.TagCertificateIdSpecification;
+import com.epam.esm.repository.specification.impl.tag.TagIdCertificateIdSpecification;
 import com.epam.esm.repository.specification.impl.tag.TagNameSpecification;
 import com.epam.esm.service.impl.GiftCertificateServiceImpl;
 import java.math.BigDecimal;
@@ -23,11 +30,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-@SuppressWarnings("unchecked")
 public class GiftCertificateServiceTest {
 
   private static final long id = 1L;
@@ -35,7 +40,7 @@ public class GiftCertificateServiceTest {
   private static List<GiftCertificate> certificates;
   private static Tag tag;
   private static List<Tag> tags;
-  private static CertificateWithTags certificateWithTags;
+  private static GiftCertificateWithTags giftCertificateWithTags;
 
   @Mock
   private TagRepository tagRepository;
@@ -55,89 +60,90 @@ public class GiftCertificateServiceTest {
     certificates = Collections.singletonList(certificate);
     tag = new Tag();
     tags = Collections.singletonList(tag);
-    certificateWithTags = new CertificateWithTags(certificate, tags);
+    giftCertificateWithTags = new GiftCertificateWithTags(certificate, tags);
   }
 
   @Test
   public void findByIdFoundCertificate() {
-    Mockito.when(certificateRepository.query(Mockito.any(CertificateIdSpecification.class)))
+    when(certificateRepository.query(any(CertificateIdSpecification.class)))
         .thenReturn(certificates);
-    Mockito.when(tagRepository.query(Mockito.any(TagCertificateIdSpecification.class))).thenReturn(tags);
-    CertificateWithTags actual = certificateService.findById(1L);
-    CertificateWithTags expected = new CertificateWithTags(certificate, tags);
+    when(tagRepository.query(any(TagCertificateIdSpecification.class))).thenReturn(tags);
+    GiftCertificateWithTags actual = certificateService.findById(1L);
+    GiftCertificateWithTags expected = new GiftCertificateWithTags(certificate, tags);
     Assert.assertEquals(expected, actual);
   }
 
   @Test(expected = ServerException.class)
-  public void findById() {
-    Mockito.when(certificateRepository.query(Mockito.any(CertificateIdSpecification.class)))
+  public void findByIdThrowsException() {
+    when(certificateRepository.query(any(CertificateIdSpecification.class)))
         .thenReturn(new ArrayList<>());
     certificateService.findById(id);
   }
 
   @Test
-  public void createGiftCertificateWithNotNullDbExistingTags() {
-    Mockito.when(tagRepository.query(Mockito.any(TagNameSpecification.class))).thenReturn(tags);
-    Mockito.when(certificateRepository.create(Mockito.any(GiftCertificate.class), Mockito.any(List.class)))
+  public void createGiftCertificateWithNotNullNotTags() {
+    when(tagRepository.query(any(TagNameSpecification.class))).thenReturn(new ArrayList<>());
+    when(tagRepository.create(tag)).thenReturn(1L);
+    when(certificateRepository.create(any(GiftCertificate.class), anyList()))
         .thenReturn(id);
-    long actualId = certificateService.create(certificateWithTags);
-    Assert.assertEquals(id, actualId);
-  }
-
-  @Test
-  public void createGiftCertificateWithNotNullNotExistingTags() {
-    Mockito.when(tagRepository.query(Mockito.any(TagNameSpecification.class))).thenReturn(new ArrayList<>());
-    Mockito.when(tagRepository.create(tag)).thenReturn(1L);
-    Mockito.when(certificateRepository.create(Mockito.any(GiftCertificate.class), Mockito.any(List.class)))
-        .thenReturn(id);
-    long actualId = certificateService.create(certificateWithTags);
+    long actualId = certificateService.create(giftCertificateWithTags);
     Assert.assertEquals(id, actualId);
   }
 
   @Test
   public void createGiftCertificateWithNullTags() {
-    CertificateWithTags certificateWithTags = new CertificateWithTags(certificate, null);
-    Mockito.when(certificateRepository.create(certificate)).thenReturn(id);
-    long actualId = certificateService.create(certificateWithTags);
+    GiftCertificateWithTags giftCertificateWithTags = new GiftCertificateWithTags(certificate, null);
+    when(certificateRepository.create(any(GiftCertificate.class), anyList())).thenReturn(id);
+    long actualId = certificateService.create(giftCertificateWithTags);
     Assert.assertEquals(id, actualId);
   }
 
   @Test
-  public void updateGiftCertificateWithNotNullDbExistingTags() {
-    Mockito.when(tagRepository.query(Mockito.any(TagNameSpecification.class))).thenReturn(tags);
-    Mockito.when(certificateRepository.update(Mockito.any(GiftCertificate.class), Mockito.any(List.class)))
-        .thenReturn(id);
-    long actualId = certificateService.update(certificateWithTags);
+  public void updateGiftCertificateWithNullTagsForCreationAndNullTagsForDeletion() {
+    GiftCertificateWithTags giftCertificateWithTags = new GiftCertificateWithTags(certificates.get(0), null);
+    when(certificateRepository.update(eq(certificates.get(0)), anyList(), anyList())).thenReturn(id);
+    long actualId = certificateService.update(giftCertificateWithTags);
     Assert.assertEquals(id, actualId);
   }
 
   @Test
-  public void updateGiftCertificateWithNotNullNotExistingTags() {
-    Mockito.when(tagRepository.query(Mockito.any(TagNameSpecification.class))).thenReturn(new ArrayList<>());
-    Mockito.when(tagRepository.create(tag)).thenReturn(1L);
-    Mockito.when(certificateRepository.update(Mockito.any(GiftCertificate.class), Mockito.any(List.class)))
-        .thenReturn(id);
-    long actualId = certificateService.update(certificateWithTags);
+  public void updateGiftCertificateWithNotNullTagsForCreationAndNullTagsForDeletion() {
+    when(tagRepository.query(any(TagNameSpecification.class))).thenReturn(tags);
+    when(certificateRepository.update(any(GiftCertificate.class), anyList(), anyList())).thenReturn(id);
+    long actualId = certificateService.update(giftCertificateWithTags);
     Assert.assertEquals(id, actualId);
   }
 
   @Test
-  public void updateGiftCertificateWithNullTags() {
-    CertificateWithTags certificateWithTags = new CertificateWithTags(certificates.get(0), null);
-    Mockito.when(certificateRepository.update(certificates.get(0))).thenReturn(id);
-    long actualId = certificateService.update(certificateWithTags);
+  public void updateGiftCertificateWithExistedTagForCreationAndNullTagsForDeletion() {
+    when(tagRepository.query(any(TagNameSpecification.class))).thenReturn(tags);
+    when(certificateRepository.update(any(GiftCertificate.class), anyList(), anyList())).thenReturn(id);
+    when(tagRepository.query(any(TagIdCertificateIdSpecification.class)))
+        .thenReturn(Collections.singletonList(new Tag()));
+    long actualId = certificateService.update(giftCertificateWithTags);
+    Assert.assertEquals(id, actualId);
+  }
+
+  @Test
+  public void updateGiftCertificateWithNotNullTagsForCreationAndNotNullTagsForDeletion() {
+    when(tagRepository.query(any(TagNameSpecification.class))).thenReturn(new ArrayList<>());
+    when(tagRepository.create(tag)).thenReturn(1L);
+    when(certificateRepository.update(any(GiftCertificate.class), anyList(), anyList())).thenReturn(id);
+    giftCertificateWithTags.setTagsForDeletion(Collections.singletonList(new Tag(1L, "some tag")));
+    long actualId = certificateService.update(giftCertificateWithTags);
+    giftCertificateWithTags.setTagsForDeletion(null);
     Assert.assertEquals(id, actualId);
   }
 
   @Test
   public void findCertificatesWithTagsFoundCertificateWithTag() {
     Map<String, String> requestCriteria = new HashMap<>();
-    Mockito.when(certificateRepository.query(Mockito.any(CertificatesCriteriaSpecification.class)))
+    when(certificateRepository.query(any(CertificatesCriteriaSpecification.class)))
         .thenReturn(certificates);
-    Mockito.when(tagRepository.query(Mockito.any(TagCertificateIdSpecification.class))).thenReturn(tags);
-    List<CertificateWithTags> actualList = certificateService.findCertificatesWithTags(requestCriteria);
-    CertificateWithTags certificateWithTags = new CertificateWithTags(certificate, tags);
-    List<CertificateWithTags> expectedList = Collections.singletonList(certificateWithTags);
+    when(tagRepository.query(any(TagCertificateIdSpecification.class))).thenReturn(tags);
+    List<GiftCertificateWithTags> actualList = certificateService.findCertificatesWithTags(requestCriteria);
+    GiftCertificateWithTags giftCertificateWithTags = new GiftCertificateWithTags(certificate, tags);
+    List<GiftCertificateWithTags> expectedList = Collections.singletonList(giftCertificateWithTags);
     Assert.assertEquals(expectedList, actualList);
   }
 
@@ -145,6 +151,6 @@ public class GiftCertificateServiceTest {
   public void deleteCorrectMethodCall() {
     long tagId = 1L;
     certificateService.delete(tagId);
-    Mockito.verify(certificateRepository).delete(1L);
+    verify(certificateRepository).delete(1L);
   }
 }

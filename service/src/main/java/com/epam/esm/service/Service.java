@@ -21,7 +21,7 @@ public interface Service<T, K> {
    *
    * @param id the id of deleting
    */
-  void delete(K id);
+  int delete(K id);
 
   /**
    * Find entity by id returns entity t.
