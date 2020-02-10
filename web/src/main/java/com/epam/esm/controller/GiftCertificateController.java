@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -48,8 +47,7 @@ public class GiftCertificateController {
    * @return the service response
    */
   @PostMapping()
-  public @ResponseBody
-  ResponseEntity<GiftCertificateWithTags> createCertificate(
+  public ResponseEntity<GiftCertificateWithTags> createCertificate(
       @RequestBody GiftCertificateWithTags giftCertificateWithTags) {
     if (!GiftCertificateWithTagsValidator.isValidGiftCertificate(giftCertificateWithTags)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
@@ -66,8 +64,7 @@ public class GiftCertificateController {
    * @return the service response
    */
   @GetMapping("/{id}")
-  public @ResponseBody
-  ResponseEntity<GiftCertificateWithTags> findCertificateById(@PathVariable Long id) {
+  public ResponseEntity<GiftCertificateWithTags> findCertificateById(@PathVariable Long id) {
     GiftCertificateWithTags giftCertificateWithTags = certificateService.findById(id);
     return new ResponseEntity<>(giftCertificateWithTags, HttpStatus.OK);
   }
@@ -79,8 +76,7 @@ public class GiftCertificateController {
    * @return the service response
    */
   @GetMapping()
-  public @ResponseBody
-  ResponseEntity<GiftCertificatesList> findAllCertificates(@RequestParam Map<String, String> parameters) {
+  public ResponseEntity<GiftCertificatesList> findAllCertificates(@RequestParam Map<String, String> parameters) {
     List<GiftCertificateWithTags> certificatesWithTags = certificateService.findCertificatesWithTags(parameters);
     return new ResponseEntity<>(new GiftCertificatesList(certificatesWithTags), HttpStatus.OK);
   }
@@ -93,8 +89,7 @@ public class GiftCertificateController {
    * @return the service response
    */
   @PatchMapping("/{id}")
-  public @ResponseBody
-  ResponseEntity<GiftCertificateWithTags> updateCertificate(@PathVariable Long id,
+  public ResponseEntity<GiftCertificateWithTags> updateCertificate(@PathVariable Long id,
       @RequestBody GiftCertificateWithTags giftCertificateWithTags) {
     if (!GiftCertificateWithTagsValidator.isValidGiftCertificate(giftCertificateWithTags)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
@@ -112,8 +107,7 @@ public class GiftCertificateController {
    * @return the service response
    */
   @DeleteMapping("/{id}")
-  public @ResponseBody
-  ResponseEntity<Void> deleteCertificate(@PathVariable Long id) {
+  public ResponseEntity<Void> deleteCertificate(@PathVariable Long id) {
     int numberOfDeletedRows = certificateService.delete(id);
     return numberOfDeletedRows > 0 ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }

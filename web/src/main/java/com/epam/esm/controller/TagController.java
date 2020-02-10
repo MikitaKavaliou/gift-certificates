@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -45,8 +44,7 @@ public class TagController {
    * @return the service response
    */
   @PostMapping()
-  public @ResponseBody
-  ResponseEntity<Tag> createTag(@RequestBody Tag tag) {
+  public ResponseEntity<Tag> createTag(@RequestBody Tag tag) {
     if (!TagValidator.isValidTag(tag)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
@@ -62,8 +60,7 @@ public class TagController {
    * @return the service response
    */
   @GetMapping("/{id}")
-  public @ResponseBody
-  ResponseEntity<Tag> findTagById(@PathVariable Long id) {
+  public ResponseEntity<Tag> findTagById(@PathVariable Long id) {
     Tag tag = tagService.findById(id);
     return new ResponseEntity<>(tag, HttpStatus.OK);
   }
@@ -74,8 +71,7 @@ public class TagController {
    * @return the service response
    */
   @GetMapping()
-  public @ResponseBody
-  ResponseEntity<TagList> findAllTags() {
+  public ResponseEntity<TagList> findAllTags() {
     List<Tag> tags = tagService.findAll();
     return new ResponseEntity<>(new TagList(tags), HttpStatus.OK);
   }
@@ -87,8 +83,7 @@ public class TagController {
    * @return the service response
    */
   @DeleteMapping("/{id}")
-  public @ResponseBody
-  ResponseEntity<Void> deleteTag(@PathVariable Long id) {
+  public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
     int numberOfDeletedRows = tagService.delete(id);
     return numberOfDeletedRows > 0 ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
