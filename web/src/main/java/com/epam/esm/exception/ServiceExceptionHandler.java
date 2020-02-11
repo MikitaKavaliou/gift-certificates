@@ -1,6 +1,6 @@
 package com.epam.esm.exception;
 
-import com.epam.esm.entity.ServiceErrorResponse;
+import com.epam.esm.response.ServiceErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

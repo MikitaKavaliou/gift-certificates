@@ -1,11 +1,14 @@
-package com.epam.esm.entity;
+package com.epam.esm.response;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class ServiceErrorResponse {
 
   private int errorCode;
   private String errorMessage;
 
-  public ServiceErrorResponse() {
+  private ServiceErrorResponse() {
   }
 
   public ServiceErrorResponse(int errorCode, String errorMessage) {

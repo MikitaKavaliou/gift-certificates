@@ -9,25 +9,8 @@ subprojects {
     repositories {
         mavenCentral()
     }
-    dependencies {
-        implementation "org.springframework:spring-context:${springVersion}"
-        implementation "javax.annotation:javax.annotation-api:${annotationApiVersion}"
-        implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
-        implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-        implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-        implementation "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
-    }
 }
 allprojects {
     group "com.epam"
     version "1.0-SNAPSHOT"
-}
-task copyWarToJetty(type: Copy, dependsOn: [":web:build"]) {
-    from warFolder
-    into deployFolder
-    rename initialWarName, resultWarName
-}
-task deploy(type: Exec, dependsOn: copyWarToJetty) {
-    workingDir jettyHome
-    commandLine "java", "-jar", jettyJarName
 }

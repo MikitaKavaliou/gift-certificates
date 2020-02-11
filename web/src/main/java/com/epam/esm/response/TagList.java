@@ -1,4 +1,4 @@
-package com.epam.esm.entity;
+package com.epam.esm.response;
 
 import com.epam.esm.model.Tag;
 import java.util.List;
@@ -14,7 +14,7 @@ public class TagList {
   @XmlElement(name = "tag")
   private List<Tag> tags;
 
-  public TagList() {
+  private TagList() {
   }
 
   public TagList(List<Tag> tags) {
@@ -23,9 +23,5 @@ public class TagList {
 
   public List<Tag> getTags() {
     return tags;
-  }
-
-  public void setTags(List<Tag> tags) {
-    this.tags = tags;
   }
 }

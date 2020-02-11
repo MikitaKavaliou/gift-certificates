@@ -1,4 +1,4 @@
-package com.epam.esm.entity;
+package com.epam.esm.dto;
 
 import com.epam.esm.adapter.ZonedDateTimeAdapter;
 import com.epam.esm.model.GiftCertificate;

@@ -1,9 +1,9 @@
 package com.epam.esm.controller;
 
-import com.epam.esm.entity.GiftCertificateWithTags;
-import com.epam.esm.entity.GiftCertificatesList;
+import com.epam.esm.dto.GiftCertificateWithTags;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
+import com.epam.esm.response.GiftCertificatesList;
 import com.epam.esm.service.GiftCertificateService;
 import com.epam.esm.validation.GiftCertificateWithTagsValidator;
 import java.util.List;

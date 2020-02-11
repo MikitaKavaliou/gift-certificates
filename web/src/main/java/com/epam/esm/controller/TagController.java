@@ -1,9 +1,9 @@
 package com.epam.esm.controller;
 
-import com.epam.esm.entity.TagList;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.Tag;
+import com.epam.esm.response.TagList;
 import com.epam.esm.service.TagService;
 import com.epam.esm.validation.TagValidator;
 import java.util.List;

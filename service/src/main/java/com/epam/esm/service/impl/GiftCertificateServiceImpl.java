@@ -1,6 +1,6 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.entity.GiftCertificateWithTags;
+import com.epam.esm.dto.GiftCertificateWithTags;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.GiftCertificate;

@@ -1,5 +1,6 @@
-package com.epam.esm.entity;
+package com.epam.esm.response;
 
+import com.epam.esm.dto.GiftCertificateWithTags;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -14,7 +15,7 @@ public class GiftCertificatesList {
   @XmlElement(name = "giftCertificate")
   private List<GiftCertificateWithTags> giftCertificatesWithTags;
 
-  public GiftCertificatesList() {
+  private GiftCertificatesList() {
   }
 
   public GiftCertificatesList(
@@ -24,9 +25,5 @@ public class GiftCertificatesList {
 
   public List<GiftCertificateWithTags> getGiftCertificatesWithTags() {
     return giftCertificatesWithTags;
-  }
-
-  public void setGiftCertificatesWithTags(List<GiftCertificateWithTags> giftCertificatesWithTags) {
-    this.giftCertificatesWithTags = giftCertificatesWithTags;
   }
 }

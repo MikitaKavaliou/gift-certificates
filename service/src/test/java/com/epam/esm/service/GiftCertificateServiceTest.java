@@ -6,7 +6,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.epam.esm.entity.GiftCertificateWithTags;
+import com.epam.esm.dto.GiftCertificateWithTags;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;

@@ -1,6 +1,6 @@
 package com.epam.esm.validation;
 
-import com.epam.esm.entity.GiftCertificateWithTags;
+import com.epam.esm.dto.GiftCertificateWithTags;
 import com.epam.esm.model.Tag;
 import java.math.BigDecimal;
 import java.util.List;
