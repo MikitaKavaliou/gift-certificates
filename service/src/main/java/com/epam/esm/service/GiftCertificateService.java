@@ -16,7 +16,7 @@ public interface GiftCertificateService extends Service<GiftCertificateWithTags,
    * @param giftCertificateWithTags the certificate with tags
    * @return the long id of created entity
    */
-  Long update(GiftCertificateWithTags giftCertificateWithTags);
+  GiftCertificateWithTags update(GiftCertificateWithTags giftCertificateWithTags);
 
   /**
    * Find certificates with tags returns found entities list.

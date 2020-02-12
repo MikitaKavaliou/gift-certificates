@@ -6,7 +6,6 @@ import com.epam.esm.model.Tag;
 import com.epam.esm.response.TagList;
 import com.epam.esm.service.TagService;
 import com.epam.esm.validation.TagValidator;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,9 +47,7 @@ public class TagController {
     if (!TagValidator.isValidTag(tag)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
-    long tagId = tagService.create(tag);
-    Tag createdTag = tagService.findById(tagId);
-    return new ResponseEntity<>(createdTag, HttpStatus.CREATED);
+    return new ResponseEntity<>(tagService.create(tag), HttpStatus.CREATED);
   }
 
   /**
@@ -61,8 +58,7 @@ public class TagController {
    */
   @GetMapping("/{id}")
   public ResponseEntity<Tag> findTagById(@PathVariable Long id) {
-    Tag tag = tagService.findById(id);
-    return new ResponseEntity<>(tag, HttpStatus.OK);
+    return new ResponseEntity<>(tagService.findById(id), HttpStatus.OK);
   }
 
   /**
@@ -72,8 +68,7 @@ public class TagController {
    */
   @GetMapping()
   public ResponseEntity<TagList> findAllTags() {
-    List<Tag> tags = tagService.findAll();
-    return new ResponseEntity<>(new TagList(tags), HttpStatus.OK);
+    return new ResponseEntity<>(new TagList(tagService.findAll()), HttpStatus.OK);
   }
 
   /**

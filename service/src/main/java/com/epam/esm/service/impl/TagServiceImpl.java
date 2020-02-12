@@ -1,12 +1,9 @@
 package com.epam.esm.service.impl;
 
+import com.epam.esm.dao.TagDao;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.Tag;
-import com.epam.esm.repository.TagRepository;
-import com.epam.esm.repository.specification.impl.tag.AllTagsSpecification;
-import com.epam.esm.repository.specification.impl.tag.TagIdSpecification;
-import com.epam.esm.repository.specification.impl.tag.TagNameSpecification;
 import com.epam.esm.service.TagService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,40 +15,37 @@ import org.springframework.stereotype.Service;
 @Service
 public class TagServiceImpl implements TagService {
 
-  private TagRepository tagRepository;
+  private TagDao tagDao;
 
   /**
    * Instantiates a new Tag service.
    *
-   * @param tagRepository the tag repository
+   * @param tagDao the tag dao
    */
   @Autowired
-  public TagServiceImpl(TagRepository tagRepository) {
-    this.tagRepository = tagRepository;
+  public TagServiceImpl(TagDao tagDao) {
+    this.tagDao = tagDao;
   }
 
   @Override
-  public Long create(Tag tag) {
-    List<Tag> tags = tagRepository.query(new TagNameSpecification(tag.getName()));
-    return tags.isEmpty() ? tagRepository.create(tag) : tags.get(0).getId();
+  public Tag create(Tag tag) {
+    return tagDao.findByName(tag.getName())
+        .orElse(tagDao.findById(tagDao.create(tag))
+            .orElseThrow(() -> new ServerException(ExceptionType.ERROR_CREATING_ENTITY)));
   }
 
   @Override
   public Tag findById(Long id) {
-    List<Tag> tags = tagRepository.query(new TagIdSpecification(id));
-    if (tags.isEmpty()) {
-      throw new ServerException(ExceptionType.RESOURCE_NOT_FOUND);
-    }
-    return tags.get(0);
+    return tagDao.findById(id).orElseThrow(() -> new ServerException(ExceptionType.RESOURCE_NOT_FOUND));
   }
 
   @Override
   public List<Tag> findAll() {
-    return tagRepository.query(new AllTagsSpecification());
+    return tagDao.findAll();
   }
 
   @Override
   public int delete(Long id) {
-    return tagRepository.delete(id);
+    return tagDao.delete(id);
   }
 }

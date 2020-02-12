@@ -74,13 +74,13 @@ public class ServiceExceptionHandler {
    * @param ex the ex
    * @return the service response
    */
-  @ExceptionHandler(Throwable.class)
+  @ExceptionHandler(Exception.class)
   public @ResponseBody
-  ResponseEntity<ServiceErrorResponse> handleInternalServerError(Throwable ex) {
+  ResponseEntity<ServiceErrorResponse> handleInternalServerError(Exception ex) {
     return createServiceResponse(ex, ExceptionType.INTERNAL_SERVER_ERROR);
   }
 
-  private ResponseEntity<ServiceErrorResponse> createServiceResponse(Throwable ex, ExceptionType exceptionType) {
+  private ResponseEntity<ServiceErrorResponse> createServiceResponse(Exception ex, ExceptionType exceptionType) {
     String exceptionMessage = ex instanceof ServerException ? exceptionType.getMessage() : ex.getMessage();
     LOGGER.error(exceptionMessage);
     return new ResponseEntity<>(

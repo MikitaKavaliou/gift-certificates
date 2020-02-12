@@ -1,13 +1,13 @@
 plugins {
-    id "org.springframework.boot" version "2.1.12.RELEASE"
-    id "io.spring.dependency-management" version "1.0.8.RELEASE"
+    id "org.springframework.boot" version "${springBootVersion}"
+    id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
 }
 dependencies {
+    implementation project(":service")
+    implementation project(":repository")
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude module: "spring-boot-starter-tomcat"
     }
     implementation "org.springframework.boot:spring-boot-starter-jetty"
     implementation "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
-    implementation project(":service")
-    implementation project(":repository")
 }

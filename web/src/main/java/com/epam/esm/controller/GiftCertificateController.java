@@ -6,7 +6,6 @@ import com.epam.esm.exception.ServerException;
 import com.epam.esm.response.GiftCertificatesList;
 import com.epam.esm.service.GiftCertificateService;
 import com.epam.esm.validation.GiftCertificateWithTagsValidator;
-import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -49,12 +48,10 @@ public class GiftCertificateController {
   @PostMapping()
   public ResponseEntity<GiftCertificateWithTags> createCertificate(
       @RequestBody GiftCertificateWithTags giftCertificateWithTags) {
-    if (!GiftCertificateWithTagsValidator.isValidGiftCertificate(giftCertificateWithTags)) {
+    if (!GiftCertificateWithTagsValidator.isValidGiftCertificateValuesForCreate(giftCertificateWithTags)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
-    long certificateId = certificateService.create(giftCertificateWithTags);
-    GiftCertificateWithTags createdGiftCertificateWithTags = certificateService.findById(certificateId);
-    return new ResponseEntity<>(createdGiftCertificateWithTags, HttpStatus.CREATED);
+    return new ResponseEntity<>(certificateService.create(giftCertificateWithTags), HttpStatus.CREATED);
   }
 
   /**
@@ -65,8 +62,7 @@ public class GiftCertificateController {
    */
   @GetMapping("/{id}")
   public ResponseEntity<GiftCertificateWithTags> findCertificateById(@PathVariable Long id) {
-    GiftCertificateWithTags giftCertificateWithTags = certificateService.findById(id);
-    return new ResponseEntity<>(giftCertificateWithTags, HttpStatus.OK);
+    return new ResponseEntity<>(certificateService.findById(id), HttpStatus.OK);
   }
 
   /**
@@ -77,8 +73,8 @@ public class GiftCertificateController {
    */
   @GetMapping()
   public ResponseEntity<GiftCertificatesList> findAllCertificates(@RequestParam Map<String, String> parameters) {
-    List<GiftCertificateWithTags> certificatesWithTags = certificateService.findCertificatesWithTags(parameters);
-    return new ResponseEntity<>(new GiftCertificatesList(certificatesWithTags), HttpStatus.OK);
+    return new ResponseEntity<>(new GiftCertificatesList(certificateService.findCertificatesWithTags(parameters)),
+        HttpStatus.OK);
   }
 
   /**
@@ -91,13 +87,12 @@ public class GiftCertificateController {
   @PatchMapping("/{id}")
   public ResponseEntity<GiftCertificateWithTags> updateCertificate(@PathVariable Long id,
       @RequestBody GiftCertificateWithTags giftCertificateWithTags) {
-    if (!GiftCertificateWithTagsValidator.isValidGiftCertificate(giftCertificateWithTags)) {
+    if (!GiftCertificateWithTagsValidator.isValidGiftCertificateValuesForUpdate(giftCertificateWithTags)
+        || !GiftCertificateWithTagsValidator.hasFieldsForUpdate(giftCertificateWithTags)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
     giftCertificateWithTags.setId(id);
-    long certificateId = certificateService.update(giftCertificateWithTags);
-    GiftCertificateWithTags updatedGiftCertificateWithTags = certificateService.findById(certificateId);
-    return new ResponseEntity<>(updatedGiftCertificateWithTags, HttpStatus.OK);
+    return new ResponseEntity<>(certificateService.update(giftCertificateWithTags), HttpStatus.OK);
   }
 
   /**

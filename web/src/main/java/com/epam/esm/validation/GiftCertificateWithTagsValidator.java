@@ -16,32 +16,50 @@ public class GiftCertificateWithTagsValidator {
 
   }
 
-  public static boolean isValidGiftCertificate(GiftCertificateWithTags certificate) {
-    return isValidGiftCertificateName(certificate.getName())
-        && isValidGiftCertificateDescription(certificate.getDescription())
-        && isValidCertificatePrice(certificate.getPrice())
-        && isValidCertificateDuration(certificate.getDuration())
-        && isValidTags(certificate.getTags())
-        && isValidTags(certificate.getTagsForDeletion());
+  public static boolean isValidGiftCertificateValuesForCreate(GiftCertificateWithTags certificate) {
+    return certificate.getName() != null && isValidGiftCertificateName(certificate.getName())
+        && certificate.getDescription() != null && isValidGiftCertificateDescription(certificate.getDescription())
+        && certificate.getPrice() != null && isValidCertificatePrice(certificate.getPrice())
+        && certificate.getDuration() != null && isValidCertificateDuration(certificate.getDuration())
+        && isValidAllCertificatesTags(certificate);
+  }
+
+  public static boolean isValidGiftCertificateValuesForUpdate(GiftCertificateWithTags certificate) {
+    return (certificate.getName() == null || isValidGiftCertificateName(certificate.getName())
+        && (certificate.getDescription() == null || isValidGiftCertificateDescription(certificate.getDescription()))
+        && (certificate.getPrice() == null || isValidCertificatePrice(certificate.getPrice()))
+        && (certificate.getDuration() == null || isValidCertificateDuration(certificate.getDuration()))
+        && isValidAllCertificatesTags(certificate));
+  }
+
+  public static boolean hasFieldsForUpdate(GiftCertificateWithTags certificate) {
+    return certificate.getName() != null || certificate.getDescription() != null ||
+        certificate.getPrice() != null || certificate.getDuration() != null ||
+        (certificate.getTags() != null && !certificate.getTags().isEmpty()) ||
+        (certificate.getTagsForDeletion() != null && !certificate.getTagsForDeletion().isEmpty());
+  }
+
+  private static boolean isValidAllCertificatesTags(GiftCertificateWithTags certificate) {
+    return isValidTagList(certificate.getTags()) && isValidTagList(certificate.getTagsForDeletion());
   }
 
   private static boolean isValidGiftCertificateName(String name) {
-    return name != null && !name.isEmpty() && name.length() <= MAX_CERTIFICATE_NAME_LENGTH;
+    return !name.isEmpty() && name.length() <= MAX_CERTIFICATE_NAME_LENGTH;
   }
 
   private static boolean isValidGiftCertificateDescription(String description) {
-    return description != null && !description.isEmpty() && description.length() <= MAX_CERTIFICATE_DESCRIPTION_LENGTH;
+    return !description.isEmpty() && description.length() <= MAX_CERTIFICATE_DESCRIPTION_LENGTH;
   }
 
   private static boolean isValidCertificatePrice(BigDecimal price) {
-    return price != null && price.doubleValue() >= MIN_CERTIFICATE_PRICE;
+    return price.doubleValue() >= MIN_CERTIFICATE_PRICE;
   }
 
   private static boolean isValidCertificateDuration(Integer duration) {
-    return duration != null && duration >= MIN_CERTIFICATE_DURATION;
+    return duration >= MIN_CERTIFICATE_DURATION;
   }
 
-  private static boolean isValidTags(List<Tag> tags) {
+  private static boolean isValidTagList(List<Tag> tags) {
     return tags == null || tags.isEmpty() || tags.stream().allMatch(TagValidator::isValidTag);
   }
 }

@@ -1,7 +1,7 @@
 package com.epam.esm.model;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 
@@ -11,15 +11,15 @@ public class GiftCertificate {
   private String name;
   private String description;
   private BigDecimal price;
-  private ZonedDateTime createDate;
-  private ZonedDateTime lastUpdateDate;
+  private LocalDateTime createDate;
+  private LocalDateTime lastUpdateDate;
   private Integer duration;
 
   public GiftCertificate() {
   }
 
-  public GiftCertificate(Long id, String name, String description, BigDecimal price, ZonedDateTime createDate,
-      ZonedDateTime lastUpdateDate, Integer duration) {
+  public GiftCertificate(Long id, String name, String description, BigDecimal price, LocalDateTime createDate,
+      LocalDateTime lastUpdateDate, Integer duration) {
     this.id = id;
     this.name = name;
     this.description = description;
@@ -65,19 +65,19 @@ public class GiftCertificate {
     this.price = price;
   }
 
-  public ZonedDateTime getCreateDate() {
+  public LocalDateTime getCreateDate() {
     return createDate;
   }
 
-  public void setCreateDate(ZonedDateTime createDate) {
+  public void setCreateDate(LocalDateTime createDate) {
     this.createDate = createDate;
   }
 
-  public ZonedDateTime getLastUpdateDate() {
+  public LocalDateTime getLastUpdateDate() {
     return lastUpdateDate;
   }
 
-  public void setLastUpdateDate(ZonedDateTime lastUpdateDate) {
+  public void setLastUpdateDate(LocalDateTime lastUpdateDate) {
     this.lastUpdateDate = lastUpdateDate;
   }
 
@@ -131,8 +131,8 @@ public class GiftCertificate {
     private String name;
     private String description;
     private BigDecimal price;
-    private ZonedDateTime createDate;
-    private ZonedDateTime lastUpdateDate;
+    private LocalDateTime createDate;
+    private LocalDateTime lastUpdateDate;
     private Integer duration;
 
     private Builder() {
@@ -158,12 +158,12 @@ public class GiftCertificate {
       return this;
     }
 
-    public Builder createDate(ZonedDateTime createDate) {
+    public Builder createDate(LocalDateTime createDate) {
       this.createDate = createDate;
       return this;
     }
 
-    public Builder lastUpdateDate(ZonedDateTime lastUpdateDate) {
+    public Builder lastUpdateDate(LocalDateTime lastUpdateDate) {
       this.lastUpdateDate = lastUpdateDate;
       return this;
     }

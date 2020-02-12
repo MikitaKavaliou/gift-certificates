@@ -14,7 +14,7 @@ public interface Service<T, K> {
    * @param object the object
    * @return the k id of created entity
    */
-  K create(T object);
+  T create(T object);
 
   /**
    * Delete entity by id.

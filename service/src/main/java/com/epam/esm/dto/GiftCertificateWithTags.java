@@ -1,6 +1,6 @@
 package com.epam.esm.dto;
 
-import com.epam.esm.adapter.ZonedDateTimeAdapter;
+import com.epam.esm.adapter.LocalDateTimeAdapter;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -28,13 +28,13 @@ public class GiftCertificateWithTags {
   private String description;
   private BigDecimal price;
   @XmlElement
-  @XmlJavaTypeAdapter(ZonedDateTimeAdapter.class)
+  @XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
   @JsonProperty(access = Access.READ_ONLY)
-  private ZonedDateTime createDate;
+  private LocalDateTime createDate;
   @XmlElement
-  @XmlJavaTypeAdapter(ZonedDateTimeAdapter.class)
+  @XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
   @JsonProperty(access = Access.READ_ONLY)
-  private ZonedDateTime lastUpdateDate;
+  private LocalDateTime lastUpdateDate;
   private Integer duration;
   @XmlElementWrapper(name = "tags")
   @XmlElement(name = "tag")
@@ -94,21 +94,21 @@ public class GiftCertificateWithTags {
     this.price = price;
   }
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-  public ZonedDateTime getCreateDate() {
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+  public LocalDateTime getCreateDate() {
     return createDate;
   }
 
-  public void setCreateDate(ZonedDateTime createDate) {
+  public void setCreateDate(LocalDateTime createDate) {
     this.createDate = createDate;
   }
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-  public ZonedDateTime getLastUpdateDate() {
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+  public LocalDateTime getLastUpdateDate() {
     return lastUpdateDate;
   }
 
-  public void setLastUpdateDate(ZonedDateTime lastUpdateDate) {
+  public void setLastUpdateDate(LocalDateTime lastUpdateDate) {
     this.lastUpdateDate = lastUpdateDate;
   }
 
