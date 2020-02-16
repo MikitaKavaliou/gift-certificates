@@ -2,12 +2,12 @@ package com.epam.esm.exception;
 
 public enum ExceptionType {
   MESSAGE_NOT_READABLE("Message not readable", 400, 40001),
-  CONTENT_TYPE_NOT_SUPPORTED("Content type not supported", 400, 40002),
-  METHOD_ARGUMENT_TYPE_MISMATCH("Method argument type mismatch", 400, 40003),
-  INCORRECT_INPUT_DATA("Incorrect input data", 400, 40004),
+  METHOD_ARGUMENT_TYPE_MISMATCH("Method argument type mismatch", 400, 40002),
+  INCORRECT_INPUT_DATA("Incorrect input data", 400, 40003),
+  MISSING_REQUEST_PARAMETER("Missing request parameter", 400, 40004),
+  UNSATISFIED_REQUEST_PARAMETER("Required parameter not met", 400, 40005),
+  MEDIA_TYPE_NOT_SUPPORTED("Media type not supported", 400, 40006),
   AUTHENTICATION_FAILURE("Authentication failure", 401, 40101),
-  ACCESS_DENIED_UNAUTHORIZED("Access for requested resource is denied", 401, 40102),
-  BAD_CREDENTIALS("Bad credentials", 401, 40103),
   ACCESS_DENIED_FORBIDDEN("Access for requested resource is denied", 403, 40301),
   RESOURCE_NOT_FOUND("Resource with requested id not found", 404, 40401),
   NOT_FOUND_HANDLER("Resource not found", 404, 40402),

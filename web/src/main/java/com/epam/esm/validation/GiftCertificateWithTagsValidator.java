@@ -21,7 +21,7 @@ public class GiftCertificateWithTagsValidator {
         && certificate.getDescription() != null && isValidGiftCertificateDescription(certificate.getDescription())
         && certificate.getPrice() != null && isValidCertificatePrice(certificate.getPrice())
         && certificate.getDuration() != null && isValidCertificateDuration(certificate.getDuration())
-        && isValidAllCertificatesTags(certificate);
+        && isValidTagList(certificate.getTags());
   }
 
   public static boolean isValidGiftCertificateValuesForUpdate(GiftCertificateWithTagsDto certificate) {
@@ -29,18 +29,7 @@ public class GiftCertificateWithTagsValidator {
         && (certificate.getDescription() == null || isValidGiftCertificateDescription(certificate.getDescription()))
         && (certificate.getPrice() == null || isValidCertificatePrice(certificate.getPrice()))
         && (certificate.getDuration() == null || isValidCertificateDuration(certificate.getDuration()))
-        && isValidAllCertificatesTags(certificate));
-  }
-
-  public static boolean hasFieldsForUpdate(GiftCertificateWithTagsDto certificate) {
-    return certificate.getName() != null || certificate.getDescription() != null ||
-        certificate.getPrice() != null || certificate.getDuration() != null ||
-        (certificate.getTags() != null && !certificate.getTags().isEmpty()) ||
-        (certificate.getTagsForDeletion() != null && !certificate.getTagsForDeletion().isEmpty());
-  }
-
-  public static boolean isValidAllCertificatesTags(GiftCertificateWithTagsDto certificate) {
-    return isValidTagList(certificate.getTags()) && isValidTagList(certificate.getTagsForDeletion());
+        && isValidTagList(certificate.getTags()));
   }
 
   public static boolean isValidGiftCertificateName(String name) {

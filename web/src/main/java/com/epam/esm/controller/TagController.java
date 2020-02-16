@@ -6,8 +6,10 @@ import com.epam.esm.model.Tag;
 import com.epam.esm.service.TagService;
 import com.epam.esm.validation.TagValidator;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,13 +18,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * The type Tag controller. The class used for processing Tag-related requests.
  */
 @RestController
-@RequestMapping("/tags")
+@RequestMapping(value = "/tags", consumes = MediaType.APPLICATION_JSON_VALUE,
+    produces = MediaType.APPLICATION_JSON_VALUE)
 public class TagController {
 
   private final TagService tagService;
@@ -49,7 +53,7 @@ public class TagController {
     if (!TagValidator.isValidTag(tag)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
-    return new ResponseEntity<>(tagService.create(tag), HttpStatus.CREATED);
+    return ResponseEntity.status(HttpStatus.CREATED.value()).body(tagService.create(tag));
   }
 
   /**
@@ -61,7 +65,7 @@ public class TagController {
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
   @GetMapping("/{id}")
   public ResponseEntity<Tag> findTagById(@PathVariable Long id) {
-    return new ResponseEntity<>(tagService.findById(id), HttpStatus.OK);
+    return ResponseEntity.status(HttpStatus.OK.value()).body(tagService.findById(id));
   }
 
   /**
@@ -71,14 +75,14 @@ public class TagController {
    */
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
   @GetMapping()
-  public ResponseEntity<List<Tag>> findAllTags() {
-    return new ResponseEntity<>(tagService.findAll(), HttpStatus.OK);
+  public ResponseEntity<List<Tag>> findAllTags(@RequestParam Map<String, String> parameters) {
+    return ResponseEntity.status(HttpStatus.OK.value()).body(tagService.findAll(parameters));
   }
 
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @GetMapping("/most_popular")
+  @GetMapping(params = "mostPopular")
   public ResponseEntity<Tag> findTheMostPopularTag() {
-    return new ResponseEntity<>(tagService.findTheMostPopularTagOfHighestSpendingUser(), HttpStatus.OK);
+    return ResponseEntity.status(HttpStatus.OK.value()).body(tagService.findTheMostPopularTagOfHighestSpendingUser());
   }
 
   /**

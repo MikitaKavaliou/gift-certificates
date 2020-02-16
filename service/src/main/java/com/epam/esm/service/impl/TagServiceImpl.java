@@ -1,11 +1,13 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.dao.TagDao;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
+import com.epam.esm.mapper.TagMapper;
 import com.epam.esm.model.Tag;
 import com.epam.esm.service.TagService;
+import com.epam.esm.util.PaginationTool;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,42 +17,47 @@ import org.springframework.stereotype.Service;
 @Service
 public class TagServiceImpl implements TagService {
 
-  private final TagDao tagDao;
+  private final TagMapper tagMapper;
 
   /**
    * Instantiates a new Tag service.
    *
-   * @param tagDao the tag dao
+   * @param tagMapper mapper
    */
   @Autowired
-  public TagServiceImpl(TagDao tagDao) {
-    this.tagDao = tagDao;
+  public TagServiceImpl(TagMapper tagMapper) {
+    this.tagMapper = tagMapper;
   }
 
   @Override
   public Tag create(Tag tag) {
-    return tagDao.findByName(tag.getName())
-        .orElseGet(() -> tagDao.findById(tagDao.create(tag))
+    return tagMapper.selectByName(tag.getName())
+        .orElseGet(() -> tagMapper.selectById(insertTag(tag))
             .orElseThrow(() -> new ServerException(ExceptionType.ERROR_CREATING_ENTITY)));
+  }
+
+  private Long insertTag(Tag tag) {
+    tagMapper.insert(tag);
+    return tag.getId();
   }
 
   @Override
   public Tag findById(Long id) {
-    return tagDao.findById(id).orElseThrow(() -> new ServerException(ExceptionType.RESOURCE_NOT_FOUND));
+    return tagMapper.selectById(id).orElseThrow(() -> new ServerException(ExceptionType.RESOURCE_NOT_FOUND));
   }
 
   @Override
-  public List<Tag> findAll() {
-    return tagDao.findAll();
+  public List<Tag> findAll(Map<String, String> parameters) {
+    return tagMapper.selectAll(PaginationTool.createRowBounds(parameters));
   }
 
   @Override
   public Tag findTheMostPopularTagOfHighestSpendingUser() {
-    return tagDao.findTheMostPopularTagOfHighestSpendingUser();
+    return tagMapper.selectMostPopularTagOfHighestSpendingUser();
   }
 
   @Override
   public int delete(Long id) {
-    return tagDao.delete(id);
+    return tagMapper.deleteById(id);
   }
 }

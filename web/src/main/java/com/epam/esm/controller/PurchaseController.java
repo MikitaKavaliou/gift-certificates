@@ -9,6 +9,7 @@ import com.epam.esm.service.PurchaseService;
 import com.epam.esm.util.UrlProvider;
 import com.epam.esm.validation.PurchaseValidator;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,14 +18,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/purchases")
+@RequestMapping(value = "/purchases", consumes = MediaType.APPLICATION_JSON_VALUE,
+    produces = MediaType.APPLICATION_JSON_VALUE)
 public class PurchaseController {
 
   private final PurchaseService purchaseService;
@@ -36,20 +38,20 @@ public class PurchaseController {
 
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
   @GetMapping()
-  public ResponseEntity<List<PurchaseWithCertificateDto>> findAllPurchasesByUserId(HttpServletRequest request) {
-    SecurityUserDetails userDetails = (SecurityUserDetails) SecurityContextHolder.getContext().getAuthentication()
-        .getPrincipal();
-    return new ResponseEntity<>(purchaseService.findPurchasesByUserId(userDetails.getId(),
-        UrlProvider.getUrlForCertificateFromPurchasesUrl(request.getRequestURL().toString())), HttpStatus.OK);
+  public ResponseEntity<List<PurchaseWithCertificateDto>> findAllPurchasesByUserId(
+      @RequestParam Map<String, String> parameters, HttpServletRequest request) {
+    return new ResponseEntity<>(purchaseService.findPurchasesByUserId(((SecurityUserDetails) SecurityContextHolder
+            .getContext().getAuthentication().getPrincipal()).getId(),
+        UrlProvider.getUrlForCertificateFromPurchasesUrl(request.getRequestURL().toString()), parameters),
+        HttpStatus.OK);
   }
 
   @Secured({"ROLE_ADMIN"})
-  @GetMapping("/{userId}")
-  public ResponseEntity<List<PurchaseWithCertificateDto>> findAllPurchasesByUserId(@PathVariable Long userId,
-      HttpServletRequest request) {
-    List<PurchaseWithCertificateDto> purchases = purchaseService.findPurchasesByUserId(userId,
-        UrlProvider.getUrlForCertificateFromPurchasesByUserIdUrl(request.getRequestURL().toString()));
-    return ResponseEntity.ok(purchases);
+  @GetMapping(params = "userId")
+  public ResponseEntity<List<PurchaseWithCertificateDto>> findAllPurchasesByUserId(@RequestParam Long userId,
+      @RequestParam Map<String, String> parameters, HttpServletRequest request) {
+    return ResponseEntity.status(HttpStatus.OK).body(purchaseService.findPurchasesByUserId(userId,
+        UrlProvider.getUrlForCertificateFromPurchasesByUserIdUrl(request.getRequestURL().toString()), parameters));
   }
 
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
@@ -59,9 +61,8 @@ public class PurchaseController {
     if (!PurchaseValidator.isValidPurchaseForCreation(purchase)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
-    SecurityUserDetails userDetails = (SecurityUserDetails) SecurityContextHolder.getContext().getAuthentication()
-        .getPrincipal();
-    purchase.setUserId(userDetails.getId());
+    purchase.setUserId(((SecurityUserDetails) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal()).getId());
     return new ResponseEntity<>(purchaseService.create(purchase,
         UrlProvider.getUrlForCertificateFromPurchasesUrl(request.getRequestURL().toString())), HttpStatus.OK);
   }

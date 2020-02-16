@@ -18,7 +18,6 @@ public class GiftCertificateWithTagsDto {
   private LocalDateTime lastUpdateDate;
   private Integer duration;
   private List<Tag> tags;
-  private List<Tag> tagsForDeletion;
 
   public GiftCertificateWithTagsDto() {
   }
@@ -103,13 +102,5 @@ public class GiftCertificateWithTagsDto {
 
   public void setTags(List<Tag> tags) {
     this.tags = tags;
-  }
-
-  public List<Tag> getTagsForDeletion() {
-    return tagsForDeletion;
-  }
-
-  public void setTagsForDeletion(List<Tag> tagsForDeletion) {
-    this.tagsForDeletion = tagsForDeletion;
   }
 }

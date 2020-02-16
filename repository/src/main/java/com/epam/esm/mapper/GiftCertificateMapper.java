@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.session.RowBounds;
 
+@Mapper
 public interface GiftCertificateMapper {
 
   @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "gift_certificate_id")
@@ -19,8 +22,13 @@ public interface GiftCertificateMapper {
       "#{price}, #{duration})")
   void insert(GiftCertificate certificate);
 
-  @Insert("INSERT INTO tag_gift_certificate (tag_id, gift_certificate_id) VALUES (#{tagId}, #{certificateId})")
-  void insertAssociativeRecord(Long tagId, Long certificateId);
+  @Insert({"<script>",
+      "INSERT INTO tag_gift_certificate (tag_id, gift_certificate_id) VALUES",
+      "<foreach item='item' index='index' collection='tagIdList' separator=','>",
+      " (#{item}, #{certificateId})",
+      "</foreach>",
+      "</script>"})
+  void insertAssociativeRecords(List<Long> tagIdList, Long certificateId);
 
   @Update({"<script>",
       "UPDATE gift_certificate",
@@ -37,8 +45,13 @@ public interface GiftCertificateMapper {
   @Update("UPDATE gift_certificate SET price=#{price} WHERE gift_certificate_id=#{id}")
   void updatePrice(Long id, BigDecimal price);
 
-  @Delete("DELETE FROM tag_gift_certificate WHERE tag_id = #{tagId} AND gift_certificate_id = #{certificateId}")
-  void deleteAssociativeRecord(Long tagId, Long certificateId);
+  @Delete({"<script>",
+      "DELETE FROM tag_gift_certificate WHERE ",
+      "<foreach item='item' index='index' collection='tagIdList'  open='(' separator=' OR ' close=')'>",
+      "(tag_id = #{item} AND gift_certificate_id = #{certificateId})",
+      "</foreach>",
+      "</script>"})
+  void deleteAssociativeRecords(List<Long> tagIdList, Long certificateId);
 
   @Delete("DELETE FROM gift_certificate WHERE gift_certificate_id = #{certificateId}")
   int delete(Long certificateId);
@@ -95,7 +108,8 @@ public interface GiftCertificateMapper {
       @Result(property = "lastUpdateDate", column = "last_update_date"),
       @Result(property = "duration", column = "duration"),
   })
-  List<GiftCertificate> findByCriteria(List<String> tags, List<String> values, String sortField, String sortType);
+  List<GiftCertificate> findByCriteria(List<String> tags, List<String> values, String sortField, String sortType,
+      RowBounds rowBounds);
 
   @Select("SELECT g.gift_certificate_id, g.name, g.description, g.price, g.create_date, g.last_update_date, "
       + "g.duration FROM gift_certificate g JOIN purchase p ON g.gift_certificate_id=p.gift_certificate_id "
@@ -109,5 +123,5 @@ public interface GiftCertificateMapper {
       @Result(property = "lastUpdateDate", column = "last_update_date"),
       @Result(property = "duration", column = "duration"),
   })
-  List<GiftCertificate> selectByUserId(Long userId);
+  List<GiftCertificate> selectByUserId(Long userId, RowBounds rowBounds);
 }

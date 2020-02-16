@@ -9,15 +9,11 @@ import java.util.Map;
 /**
  * The interface Gift certificate service. Interface defines specific operations with GiftCertificates.
  */
-public interface GiftCertificateService extends Service<GiftCertificateWithTagsDto, Long> {
+public interface GiftCertificateService {
 
-  /**
-   * Update certificate with passed tags returns id of update entity long.
-   *
-   * @param giftCertificateWithTagsDto the certificate with tags
-   * @return the long id of created entity
-   */
-  GiftCertificateWithTagsDto update(GiftCertificateWithTagsDto giftCertificateWithTagsDto);
+  GiftCertificateWithTagsDto create(GiftCertificateWithTagsDto giftCertificateWithTagsDto);
+
+  GiftCertificateWithTagsDto findById(Long id);
 
   /**
    * Find certificates with tags returns found entities list.
@@ -27,7 +23,15 @@ public interface GiftCertificateService extends Service<GiftCertificateWithTagsD
    */
   List<GiftCertificateWithTagsDto> findByCriteria(Map<String, String> requestCriteria);
 
-  List<GiftCertificateWithTagsDto> findByUserId(Long userId);
+  List<GiftCertificateWithTagsDto> findByUserId(Long userId, Map<String, String> parameters);
+
+  /**
+   * Update certificate with passed tags returns id of update entity long.
+   *
+   * @param giftCertificateWithTagsDto the certificate with tags
+   * @return the long id of created entity
+   */
+  GiftCertificateWithTagsDto update(GiftCertificateWithTagsDto giftCertificateWithTagsDto, String tagAction);
 
   /**
    * Update price gift certificate with tags dto.
@@ -37,4 +41,6 @@ public interface GiftCertificateService extends Service<GiftCertificateWithTagsD
    * @return the gift certificate with tags dto
    */
   GiftCertificateWithTagsDto updatePrice(Long id, BigDecimal price);
+
+  int delete(Long id);
 }

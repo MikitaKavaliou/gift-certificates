@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.session.RowBounds;
 
 
 public interface TagMapper {
@@ -30,7 +31,7 @@ public interface TagMapper {
       @Result(property = "id", column = "tag_id"),
       @Result(property = "name", column = "name"),
   })
-  List<Tag> selectAll();
+  List<Tag> selectAll(RowBounds rowBounds);
 
   @Select("SELECT T.tag_id FROM tag T"
       + " JOIN tag_gift_certificate TG ON T.tag_id=TG.tag_id WHERE TG.tag_id = #{tagId} and TG.gift_certificate_id = "

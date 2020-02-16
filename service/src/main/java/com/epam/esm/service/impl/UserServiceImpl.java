@@ -1,8 +1,8 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.dao.UserDao;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
+import com.epam.esm.mapper.UserMapper;
 import com.epam.esm.model.Role;
 import com.epam.esm.model.User;
 import com.epam.esm.service.UserService;
@@ -13,26 +13,29 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserServiceImpl implements UserService {
 
-  private final UserDao userDao;
+  private final UserMapper userMapper;
 
   /**
    * Instantiates a new Tag service.
-   *
-   * @param userDao the tag dao
    */
   @Autowired
-  public UserServiceImpl(UserDao userDao) {
-    this.userDao = userDao;
+  public UserServiceImpl(UserMapper userMapper) {
+    this.userMapper = userMapper;
   }
 
   @Override
   public User create(final User user) {
     prepareUserForInsert(user);
-    userDao.findByUsername(user.getUsername()).ifPresentOrElse(u -> {
+    userMapper.selectByUsername(user.getUsername()).ifPresentOrElse(u -> {
       throw new ServerException(ExceptionType.USER_ALREADY_EXISTS);
-    }, () -> setNewUserFields(user, userDao.findById(userDao.create(user))
+    }, () -> setNewUserFields(user, userMapper.selectById(insertUser(user))
         .orElseThrow(() -> new ServerException(ExceptionType.ERROR_CREATING_ENTITY))));
     return user;
+  }
+
+  private Long insertUser(User user) {
+    userMapper.insert(user);
+    return user.getId();
   }
 
   private void prepareUserForInsert(User user) {
@@ -49,7 +52,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User findByUsername(String username) {
-    return userDao.findByUsername(username)
+    return userMapper.selectByUsername(username)
         .orElseThrow(() -> new ServerException(ExceptionType.AUTHENTICATION_FAILURE));
   }
 }

@@ -9,8 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -61,6 +65,18 @@ public class ServerExceptionHandler {
     return createServiceResponse(ex, ExceptionType.METHOD_ARGUMENT_TYPE_MISMATCH);
   }
 
+  @ExceptionHandler({UnsatisfiedServletRequestParameterException.class})
+  public @ResponseBody
+  ResponseEntity<ServerErrorDto> handleUnsatisfiedRequestParameter(Exception ex) {
+    return createServiceResponse(ex, ExceptionType.UNSATISFIED_REQUEST_PARAMETER);
+  }
+
+  @ExceptionHandler({HttpMediaTypeNotSupportedException.class})
+  public @ResponseBody
+  ResponseEntity<ServerErrorDto> handleHttpMediaTypeNotSupported(Exception ex) {
+    return createServiceResponse(ex, ExceptionType.MEDIA_TYPE_NOT_SUPPORTED);
+  }
+
   /**
    * Handle access denied exception response entity.
    *
@@ -72,7 +88,7 @@ public class ServerExceptionHandler {
   ResponseEntity<ServerErrorDto> handleAccessDeniedException(Exception ex) {
     String role = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
         .map(GrantedAuthority::getAuthority).findAny().orElse("NO ROLE");
-    return role.equals(Role.GUEST.getRoleName()) ? createServiceResponse(ex, ExceptionType.ACCESS_DENIED_UNAUTHORIZED) :
+    return role.equals(Role.GUEST.getRoleName()) ? createServiceResponse(ex, ExceptionType.AUTHENTICATION_FAILURE) :
         createServiceResponse(ex, ExceptionType.ACCESS_DENIED_FORBIDDEN);
   }
 
@@ -82,10 +98,16 @@ public class ServerExceptionHandler {
    * @param ex the ex
    * @return the response entity
    */
-  @ExceptionHandler({BadCredentialsException.class})
+  @ExceptionHandler({BadCredentialsException.class, InternalAuthenticationServiceException.class})
   public @ResponseBody
   ResponseEntity<ServerErrorDto> handleBadCredentialsException(Exception ex) {
-    return createServiceResponse(ex, ExceptionType.BAD_CREDENTIALS);
+    return createServiceResponse(ex, ExceptionType.AUTHENTICATION_FAILURE);
+  }
+
+  @ExceptionHandler({MissingServletRequestParameterException.class})
+  public @ResponseBody
+  ResponseEntity<ServerErrorDto> handleMissingServletRequestParameterException(Exception ex) {
+    return createServiceResponse(ex, ExceptionType.MISSING_REQUEST_PARAMETER);
   }
 
   /**
@@ -115,8 +137,8 @@ public class ServerExceptionHandler {
   private ResponseEntity<ServerErrorDto> createServiceResponse(Exception ex, ExceptionType exceptionType) {
     String exceptionMessage = ex instanceof ServerException ? exceptionType.getMessage() : ex.getMessage();
     LOGGER.error(ex.getClass() + " " + exceptionMessage);
-    return new ResponseEntity<>(
-        new ServerErrorDto(exceptionType.getServerErrorCode(), exceptionType.getMessage()),
-        HttpStatus.valueOf(exceptionType.getHttpErrorCode()));
+    return ResponseEntity
+        .status(HttpStatus.valueOf(exceptionType.getHttpErrorCode()))
+        .body(new ServerErrorDto(exceptionType.getServerErrorCode(), exceptionType.getMessage()));
   }
 }

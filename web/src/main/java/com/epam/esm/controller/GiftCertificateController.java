@@ -1,6 +1,7 @@
 package com.epam.esm.controller;
 
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
+import com.epam.esm.dto.PriceDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.security.SecurityUserDetails;
@@ -29,7 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
  * The type Gift certificate controller. The class used for processing GiftCertificate-related requests.
  */
 @RestController
-@RequestMapping("/certificates")
+@RequestMapping(value = "/certificates", consumes = MediaType.APPLICATION_JSON_VALUE,
+    produces = MediaType.APPLICATION_JSON_VALUE)
 public class GiftCertificateController {
 
   private final GiftCertificateService certificateService;
@@ -51,13 +53,14 @@ public class GiftCertificateController {
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
-  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping()
   public ResponseEntity<GiftCertificateWithTagsDto> createCertificate(
       @RequestBody GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
     if (!GiftCertificateWithTagsValidator.isValidGiftCertificateValuesForCreate(giftCertificateWithTagsDto)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
-    return new ResponseEntity<>(certificateService.create(giftCertificateWithTagsDto), HttpStatus.CREATED);
+    return ResponseEntity.status(HttpStatus.CREATED.value())
+        .body(certificateService.create(giftCertificateWithTagsDto));
   }
 
   /**
@@ -66,10 +69,9 @@ public class GiftCertificateController {
    * @param id the id of requested resource
    * @return the service response
    */
-  @Secured({"ROLE_ADMIN", "ROLE_USER", "ROLE_GUEST"})
   @GetMapping("/{id}")
   public ResponseEntity<GiftCertificateWithTagsDto> findCertificateById(@PathVariable Long id) {
-    return new ResponseEntity<>(certificateService.findById(id), HttpStatus.OK);
+    return ResponseEntity.status(HttpStatus.OK.value()).body(certificateService.findById(id));
   }
 
   /**
@@ -78,25 +80,26 @@ public class GiftCertificateController {
    * @param parameters the parameters
    * @return the service response
    */
-  @Secured({"ROLE_ADMIN", "ROLE_USER", "ROLE_GUEST"})
   @GetMapping()
   public ResponseEntity<List<GiftCertificateWithTagsDto>> findAllCertificates(
       @RequestParam Map<String, String> parameters) {
-    return new ResponseEntity<>(certificateService.findByCriteria(parameters), HttpStatus.OK);
+    return ResponseEntity.status(HttpStatus.OK.value()).body(certificateService.findByCriteria(parameters));
   }
 
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @GetMapping("/user_certificates")
-  public ResponseEntity<List<GiftCertificateWithTagsDto>> findUserCertificates() {
-    SecurityUserDetails userDetails = (SecurityUserDetails) SecurityContextHolder.getContext().getAuthentication()
-        .getPrincipal();
-    return new ResponseEntity<>(certificateService.findByUserId(userDetails.getId()), HttpStatus.OK);
+  @GetMapping(params = "userCertificates")
+  public ResponseEntity<List<GiftCertificateWithTagsDto>> findUserCertificates(
+      @RequestParam Map<String, String> parameters) {
+    return ResponseEntity.status(HttpStatus.OK.value()).body(
+        certificateService.findByUserId(((SecurityUserDetails) SecurityContextHolder.getContext().getAuthentication()
+            .getPrincipal()).getId(), parameters));
   }
 
   @Secured("ROLE_ADMIN")
-  @GetMapping("/user_certificates/{userId}")
-  public ResponseEntity<List<GiftCertificateWithTagsDto>> findUserCertificates(@PathVariable Long userId) {
-    return new ResponseEntity<>(certificateService.findByUserId(userId), HttpStatus.OK);
+  @GetMapping(params = "userId")
+  public ResponseEntity<List<GiftCertificateWithTagsDto>> findUserCertificates(@RequestParam Long userId,
+      @RequestParam Map<String, String> parameters) {
+    return ResponseEntity.status(HttpStatus.OK.value()).body(certificateService.findByUserId(userId, parameters));
   }
 
   /**
@@ -109,30 +112,28 @@ public class GiftCertificateController {
   @Secured("ROLE_ADMIN")
   @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GiftCertificateWithTagsDto> updateCertificate(@PathVariable Long id,
-      @RequestBody GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
-    if (!GiftCertificateWithTagsValidator.isValidGiftCertificateValuesForUpdate(giftCertificateWithTagsDto)
-        || !GiftCertificateWithTagsValidator.hasFieldsForUpdate(giftCertificateWithTagsDto)) {
+      @RequestBody GiftCertificateWithTagsDto giftCertificateWithTagsDto, @RequestParam String tagAction) {
+    if (!GiftCertificateWithTagsValidator.isValidGiftCertificateValuesForUpdate(giftCertificateWithTagsDto)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
     giftCertificateWithTagsDto.setId(id);
-    return new ResponseEntity<>(certificateService.update(giftCertificateWithTagsDto), HttpStatus.OK);
+    return ResponseEntity.status(HttpStatus.OK).body(certificateService.update(giftCertificateWithTagsDto, tagAction));
   }
 
   /**
    * Update price response entity.
    *
-   * @param id          the id
-   * @param certificate the certificate
+   * @param id the id
    * @return the response entity
    */
   @Secured("ROLE_ADMIN")
-  @PutMapping(value = "/{id}/price", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/{id}", params = "price", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GiftCertificateWithTagsDto> updatePrice(@PathVariable Long id,
-      @RequestBody GiftCertificateWithTagsDto certificate) {
-    if (!GiftCertificateWithTagsValidator.isValidCertificatePrice(certificate.getPrice())) {
+      @RequestBody PriceDto price) {
+    if (price.getPrice() != null && !GiftCertificateWithTagsValidator.isValidCertificatePrice(price.getPrice())) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
-    return new ResponseEntity<>(certificateService.updatePrice(id, certificate.getPrice()), HttpStatus.OK);
+    return ResponseEntity.status(HttpStatus.OK.value()).body(certificateService.updatePrice(id, price.getPrice()));
   }
 
   /**

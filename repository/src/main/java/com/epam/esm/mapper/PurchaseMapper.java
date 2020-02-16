@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.session.RowBounds;
 
 public interface PurchaseMapper {
 
@@ -35,5 +36,5 @@ public interface PurchaseMapper {
       @Result(property = "cost", column = "cost"),
       @Result(property = "purchaseDate", column = "purchase_date")
   })
-  List<Purchase> selectByUserId(Long userId);
+  List<Purchase> selectByUserId(Long userId, RowBounds rowBounds);
 }

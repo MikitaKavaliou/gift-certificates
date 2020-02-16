@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     http
         .csrf().disable()
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).and().exceptionHandling();
+        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().exceptionHandling();
     http.addFilterBefore(authenticationFilter, BasicAuthenticationFilter.class);
   }
 
