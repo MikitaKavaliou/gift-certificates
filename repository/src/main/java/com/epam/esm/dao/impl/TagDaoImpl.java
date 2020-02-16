@@ -25,8 +25,8 @@ public class TagDaoImpl implements TagDao {
   public Long create(Tag tag) {
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
       sqlSession.getMapper(TagMapper.class).insert(tag);
+      return tag.getId();
     }
-    return tag.getId();
   }
 
   @Override
@@ -68,6 +68,13 @@ public class TagDaoImpl implements TagDao {
   public Optional<Tag> findById(Long id) {
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
       return sqlSession.getMapper(TagMapper.class).selectById(id);
+    }
+  }
+
+  @Override
+  public Tag findTheMostPopularTagOfHighestSpendingUser() {
+    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+      return sqlSession.getMapper(TagMapper.class).selectMostPopularTagOfHighestSpendingUser();
     }
   }
 }

@@ -29,10 +29,6 @@ public class GiftCertificate {
     this.duration = duration;
   }
 
-  public static Builder builder() {
-    return new Builder();
-  }
-
   public Long getId() {
     return id;
   }
@@ -123,58 +119,5 @@ public class GiftCertificate {
         ", lastUpdateDate=" + lastUpdateDate +
         ", duration=" + duration +
         '}';
-  }
-
-  public static class Builder {
-
-    private Long id;
-    private String name;
-    private String description;
-    private BigDecimal price;
-    private LocalDateTime createDate;
-    private LocalDateTime lastUpdateDate;
-    private Integer duration;
-
-    private Builder() {
-    }
-
-    public Builder id(Long id) {
-      this.id = id;
-      return this;
-    }
-
-    public Builder name(String name) {
-      this.name = name;
-      return this;
-    }
-
-    public Builder description(String description) {
-      this.description = description;
-      return this;
-    }
-
-    public Builder price(BigDecimal price) {
-      this.price = price;
-      return this;
-    }
-
-    public Builder createDate(LocalDateTime createDate) {
-      this.createDate = createDate;
-      return this;
-    }
-
-    public Builder lastUpdateDate(LocalDateTime lastUpdateDate) {
-      this.lastUpdateDate = lastUpdateDate;
-      return this;
-    }
-
-    public Builder duration(Integer duration) {
-      this.duration = duration;
-      return this;
-    }
-
-    public GiftCertificate build() {
-      return new GiftCertificate(id, name, description, price, createDate, lastUpdateDate, duration);
-    }
   }
 }

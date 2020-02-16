@@ -14,4 +14,6 @@ public interface TagService extends Service<Tag, Long> {
    * @return the list of tags
    */
   List<Tag> findAll();
+
+  Tag findTheMostPopularTagOfHighestSpendingUser();
 }

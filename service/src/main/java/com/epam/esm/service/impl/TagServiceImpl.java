@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class TagServiceImpl implements TagService {
 
-  private TagDao tagDao;
+  private final TagDao tagDao;
 
   /**
    * Instantiates a new Tag service.
@@ -30,7 +30,7 @@ public class TagServiceImpl implements TagService {
   @Override
   public Tag create(Tag tag) {
     return tagDao.findByName(tag.getName())
-        .orElse(tagDao.findById(tagDao.create(tag))
+        .orElseGet(() -> tagDao.findById(tagDao.create(tag))
             .orElseThrow(() -> new ServerException(ExceptionType.ERROR_CREATING_ENTITY)));
   }
 
@@ -42,6 +42,11 @@ public class TagServiceImpl implements TagService {
   @Override
   public List<Tag> findAll() {
     return tagDao.findAll();
+  }
+
+  @Override
+  public Tag findTheMostPopularTagOfHighestSpendingUser() {
+    return tagDao.findTheMostPopularTagOfHighestSpendingUser();
   }
 
   @Override

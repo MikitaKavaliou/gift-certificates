@@ -4,7 +4,7 @@ import com.epam.esm.model.Tag;
 import java.util.List;
 import java.util.Optional;
 
-public interface TagDao extends GenericDao<Tag, Long> {
+public interface TagDao {
 
   Long create(Tag tag);
 
@@ -12,7 +12,13 @@ public interface TagDao extends GenericDao<Tag, Long> {
 
   List<Tag> findByCertificateId(Long certificateId);
 
+  Optional<Tag> findById(Long id);
+
   Optional<Long> findTagIdByTagIdAndCertificateId(Long tagId, Long certificateId);
 
   Optional<Tag> findByName(String name);
+
+  Tag findTheMostPopularTagOfHighestSpendingUser();
+
+  int delete(Long id);
 }

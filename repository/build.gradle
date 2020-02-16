@@ -3,7 +3,6 @@ plugins {
     id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
 }
 dependencies {
-    implementation "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
     implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisStarterVersion}"
     runtimeOnly "mysql:mysql-connector-java"
     testImplementation "com.h2database:h2"

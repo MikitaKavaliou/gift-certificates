@@ -1,11 +1,16 @@
 package com.epam.esm.exception;
 
-import com.epam.esm.response.ServiceErrorResponse;
+import com.epam.esm.dto.ServerErrorDto;
+import com.epam.esm.model.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,9 +21,9 @@ import org.springframework.web.servlet.NoHandlerFoundException;
  * The type Exception handling controller. Controller class used for exception handling and generating response.
  */
 @ControllerAdvice
-public class ServiceExceptionHandler {
+public class ServerExceptionHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ServiceExceptionHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServerExceptionHandler.class);
 
   /**
    * Handle no handler found exception service response.
@@ -28,7 +33,7 @@ public class ServiceExceptionHandler {
    */
   @ExceptionHandler(NoHandlerFoundException.class)
   public @ResponseBody
-  ResponseEntity<ServiceErrorResponse> handleNoHandlerFoundException(Exception ex) {
+  ResponseEntity<ServerErrorDto> handleNoHandlerFoundException(Exception ex) {
     return createServiceResponse(ex, ExceptionType.NOT_FOUND_HANDLER);
   }
 
@@ -40,7 +45,7 @@ public class ServiceExceptionHandler {
    */
   @ExceptionHandler({HttpMessageNotReadableException.class})
   public @ResponseBody
-  ResponseEntity<ServiceErrorResponse> handleHttpMessageNotReadableException(Exception ex) {
+  ResponseEntity<ServerErrorDto> handleHttpMessageNotReadableException(Exception ex) {
     return createServiceResponse(ex, ExceptionType.MESSAGE_NOT_READABLE);
   }
 
@@ -52,8 +57,35 @@ public class ServiceExceptionHandler {
    */
   @ExceptionHandler({MethodArgumentTypeMismatchException.class})
   public @ResponseBody
-  ResponseEntity<ServiceErrorResponse> handleMethodArgumentTypeMismatch(Exception ex) {
+  ResponseEntity<ServerErrorDto> handleMethodArgumentTypeMismatch(Exception ex) {
     return createServiceResponse(ex, ExceptionType.METHOD_ARGUMENT_TYPE_MISMATCH);
+  }
+
+  /**
+   * Handle access denied exception response entity.
+   *
+   * @param ex the ex
+   * @return the response entity
+   */
+  @ExceptionHandler({AccessDeniedException.class})
+  public @ResponseBody
+  ResponseEntity<ServerErrorDto> handleAccessDeniedException(Exception ex) {
+    String role = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+        .map(GrantedAuthority::getAuthority).findAny().orElse("NO ROLE");
+    return role.equals(Role.GUEST.getRoleName()) ? createServiceResponse(ex, ExceptionType.ACCESS_DENIED_UNAUTHORIZED) :
+        createServiceResponse(ex, ExceptionType.ACCESS_DENIED_FORBIDDEN);
+  }
+
+  /**
+   * Handle access denied exception response entity.
+   *
+   * @param ex the ex
+   * @return the response entity
+   */
+  @ExceptionHandler({BadCredentialsException.class})
+  public @ResponseBody
+  ResponseEntity<ServerErrorDto> handleBadCredentialsException(Exception ex) {
+    return createServiceResponse(ex, ExceptionType.BAD_CREDENTIALS);
   }
 
   /**
@@ -64,7 +96,7 @@ public class ServiceExceptionHandler {
    */
   @ExceptionHandler({ServerException.class})
   public @ResponseBody
-  ResponseEntity<ServiceErrorResponse> handleServerException(ServerException ex) {
+  ResponseEntity<ServerErrorDto> handleServerException(ServerException ex) {
     return createServiceResponse(ex, ex.getExceptionType());
   }
 
@@ -76,15 +108,15 @@ public class ServiceExceptionHandler {
    */
   @ExceptionHandler(Exception.class)
   public @ResponseBody
-  ResponseEntity<ServiceErrorResponse> handleInternalServerError(Exception ex) {
+  ResponseEntity<ServerErrorDto> handleInternalServerError(Exception ex) {
     return createServiceResponse(ex, ExceptionType.INTERNAL_SERVER_ERROR);
   }
 
-  private ResponseEntity<ServiceErrorResponse> createServiceResponse(Exception ex, ExceptionType exceptionType) {
+  private ResponseEntity<ServerErrorDto> createServiceResponse(Exception ex, ExceptionType exceptionType) {
     String exceptionMessage = ex instanceof ServerException ? exceptionType.getMessage() : ex.getMessage();
-    LOGGER.error(exceptionMessage);
+    LOGGER.error(ex.getClass() + " " + exceptionMessage);
     return new ResponseEntity<>(
-        new ServiceErrorResponse(exceptionType.getServerErrorCode(), exceptionType.getMessage()),
+        new ServerErrorDto(exceptionType.getServerErrorCode(), exceptionType.getMessage()),
         HttpStatus.valueOf(exceptionType.getHttpErrorCode()));
   }
 }

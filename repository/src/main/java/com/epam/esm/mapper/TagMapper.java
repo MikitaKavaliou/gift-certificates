@@ -54,4 +54,24 @@ public interface TagMapper {
 
   @Delete("DELETE FROM tag WHERE tag_id = #{tagId}")
   int deleteById(Long tagId);
+
+  @Select("SELECT t.tag_id, t.name FROM user u "
+      + "join purchase p ON u.user_id=p.user_id "
+      + "join gift_certificate g ON p.gift_certificate_id=g.gift_certificate_id "
+      + "join tag_gift_certificate tg ON g.gift_certificate_id=tg.gift_certificate_id "
+      + "join tag t ON tg.tag_id=t.tag_id "
+      + "WHERE u.user_id = ( "
+      + "     SELECT u.user_id FROM user u "
+      + "                JOIN purchase p ON u.user_id=p.user_id "
+      + "                group by p.user_id "
+      + "                order by sum(p.cost) desc "
+      + "     LIMIT 1) "
+      + "group by t.tag_id "
+      + "order by count(t.name) desc "
+      + "LIMIT 1")
+  @Results({
+      @Result(property = "id", column = "tag_id"),
+      @Result(property = "name", column = "name"),
+  })
+  Tag selectMostPopularTagOfHighestSpendingUser();
 }

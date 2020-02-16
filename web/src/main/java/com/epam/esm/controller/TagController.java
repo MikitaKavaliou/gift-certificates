@@ -3,12 +3,13 @@ package com.epam.esm.controller;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.Tag;
-import com.epam.esm.response.TagList;
 import com.epam.esm.service.TagService;
 import com.epam.esm.validation.TagValidator;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/tags")
 public class TagController {
 
-  private TagService tagService;
+  private final TagService tagService;
 
   /**
    * Instantiates a new Tag controller.
@@ -42,6 +43,7 @@ public class TagController {
    * @param tag the tag
    * @return the service response
    */
+  @Secured("ROLE_ADMIN")
   @PostMapping()
   public ResponseEntity<Tag> createTag(@RequestBody Tag tag) {
     if (!TagValidator.isValidTag(tag)) {
@@ -56,6 +58,7 @@ public class TagController {
    * @param id the id of requested returns resource
    * @return the service response
    */
+  @Secured({"ROLE_ADMIN", "ROLE_USER"})
   @GetMapping("/{id}")
   public ResponseEntity<Tag> findTagById(@PathVariable Long id) {
     return new ResponseEntity<>(tagService.findById(id), HttpStatus.OK);
@@ -66,9 +69,16 @@ public class TagController {
    *
    * @return the service response
    */
+  @Secured({"ROLE_ADMIN", "ROLE_USER"})
   @GetMapping()
-  public ResponseEntity<TagList> findAllTags() {
-    return new ResponseEntity<>(new TagList(tagService.findAll()), HttpStatus.OK);
+  public ResponseEntity<List<Tag>> findAllTags() {
+    return new ResponseEntity<>(tagService.findAll(), HttpStatus.OK);
+  }
+
+  @Secured({"ROLE_ADMIN", "ROLE_USER"})
+  @GetMapping("/most_popular")
+  public ResponseEntity<Tag> findTheMostPopularTag() {
+    return new ResponseEntity<>(tagService.findTheMostPopularTagOfHighestSpendingUser(), HttpStatus.OK);
   }
 
   /**
@@ -77,6 +87,7 @@ public class TagController {
    * @param id the id of deleting entity
    * @return the service response
    */
+  @Secured("ROLE_ADMIN")
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
     int numberOfDeletedRows = tagService.delete(id);

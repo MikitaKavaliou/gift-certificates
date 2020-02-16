@@ -2,12 +2,13 @@ package com.epam.esm.service.impl;
 
 import com.epam.esm.dao.GiftCertificateDao;
 import com.epam.esm.dao.TagDao;
-import com.epam.esm.dto.GiftCertificateWithTags;
+import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
 import com.epam.esm.service.GiftCertificateService;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -24,8 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class GiftCertificateServiceImpl implements GiftCertificateService {
 
-  private GiftCertificateDao giftCertificateDao;
-  private TagDao tagDao;
+  private final GiftCertificateDao giftCertificateDao;
+  private final TagDao tagDao;
 
   @Autowired
   public GiftCertificateServiceImpl(GiftCertificateDao giftCertificateDao, TagDao tagDao) {
@@ -34,15 +35,15 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   }
 
   @Override
-  public GiftCertificateWithTags findById(Long id) {
-    return findCertificateById(id, ExceptionType.RESOURCE_NOT_FOUND);
+  public GiftCertificateWithTagsDto findById(Long id) {
+    return doFindById(id, ExceptionType.RESOURCE_NOT_FOUND);
   }
 
-  private GiftCertificateWithTags findCertificateById(Long id, ExceptionType exceptionType) {
+  private GiftCertificateWithTagsDto doFindById(Long id, ExceptionType exceptionType) {
     GiftCertificate giftCertificate = giftCertificateDao.findById(id)
         .orElseThrow(() -> new ServerException(exceptionType));
     List<Tag> tags = tagDao.findByCertificateId(id);
-    return new GiftCertificateWithTags(giftCertificate, tags);
+    return new GiftCertificateWithTagsDto(giftCertificate, tags);
   }
 
   @Override
@@ -52,40 +53,43 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
   @Transactional
   @Override
-  public GiftCertificateWithTags create(GiftCertificateWithTags giftCertificateWithTags) {
-    return findCertificateById(createGiftCertificate(giftCertificateWithTags), ExceptionType.ERROR_CREATING_ENTITY);
+  public GiftCertificateWithTagsDto create(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
+    return doFindById(createGiftCertificate(giftCertificateWithTagsDto), ExceptionType.ERROR_CREATING_ENTITY);
   }
 
-  private Long createGiftCertificate(GiftCertificateWithTags giftCertificateWithTags) {
+  private Long createGiftCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
     List<Long> listOfTagId = new ArrayList<>();
-    if (giftCertificateWithTags.getTags() != null) {
-      listOfTagId.addAll(createTagIdSetForAddingToCertificate(giftCertificateWithTags.getTags()));
+    if (giftCertificateWithTagsDto.getTags() != null) {
+      listOfTagId.addAll(createTagIdSetForAddingToCertificate(giftCertificateWithTagsDto.getTags()));
     }
-    return giftCertificateDao.create(giftCertificateWithTags.getGiftCertificate(), listOfTagId);
+    return giftCertificateDao.create(giftCertificateWithTagsDto.getGiftCertificate(), listOfTagId);
   }
 
   @Transactional
   @Override
-  public GiftCertificateWithTags update(GiftCertificateWithTags giftCertificateWithTags) {
-    List<Long> tagIdListForCreation = findTagIdListForAddingToCertificate(giftCertificateWithTags);
-    List<Long> tagIdListForDeletion = findTagIdListForDeletingTagsFromCertificate(giftCertificateWithTags);
-    giftCertificateDao.update(giftCertificateWithTags.getGiftCertificate(), tagIdListForCreation, tagIdListForDeletion);
-    return findCertificateById(giftCertificateWithTags.getId(), ExceptionType.RESOURCE_NOT_FOUND);
+  public GiftCertificateWithTagsDto update(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
+    List<Long> tagIdListForCreation = findTagIdListForAddingToCertificate(giftCertificateWithTagsDto);
+    List<Long> tagIdListForDeletion = findTagIdListForDeletingTagsFromCertificate(giftCertificateWithTagsDto);
+    giftCertificateDao
+        .update(giftCertificateWithTagsDto.getGiftCertificate(), tagIdListForCreation, tagIdListForDeletion);
+    return doFindById(giftCertificateWithTagsDto.getId(), ExceptionType.RESOURCE_NOT_FOUND);
   }
 
-  private List<Long> findTagIdListForAddingToCertificate(GiftCertificateWithTags giftCertificateWithTags) {
+  private List<Long> findTagIdListForAddingToCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
     List<Long> tagIdListForCreation = new ArrayList<>();
-    if (giftCertificateWithTags.getTags() != null) {
+    if (giftCertificateWithTagsDto.getTags() != null) {
       tagIdListForCreation.addAll(removeExistedCertificateTagsFromSet(
-          createTagIdSetForAddingToCertificate(giftCertificateWithTags.getTags()), giftCertificateWithTags.getId()));
+          createTagIdSetForAddingToCertificate(giftCertificateWithTagsDto.getTags()),
+          giftCertificateWithTagsDto.getId()));
     }
     return tagIdListForCreation;
   }
 
-  private List<Long> findTagIdListForDeletingTagsFromCertificate(GiftCertificateWithTags giftCertificateWithTags) {
+  private List<Long> findTagIdListForDeletingTagsFromCertificate(
+      GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
     List<Long> tagIdListForDeletion = new ArrayList<>();
-    if (giftCertificateWithTags.getTagsForDeletion() != null) {
-      giftCertificateWithTags.getTagsForDeletion()
+    if (giftCertificateWithTagsDto.getTagsForDeletion() != null) {
+      giftCertificateWithTagsDto.getTagsForDeletion()
           .forEach(tag -> tagDao.findByName(tag.getName()).ifPresent(t -> tagIdListForDeletion.add(t.getId())));
     }
     return tagIdListForDeletion;
@@ -104,11 +108,18 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   }
 
   @Override
-  public List<GiftCertificateWithTags> findCertificatesWithTags(Map<String, String> parameters) {
+  public List<GiftCertificateWithTagsDto> findAll(Map<String, String> parameters) {
     List<GiftCertificate> certificates = giftCertificateDao.findCertificatesByCriteria(parameters);
-    List<GiftCertificateWithTags> certificatesWithTags = new ArrayList<>();
+    List<GiftCertificateWithTagsDto> certificatesWithTags = new ArrayList<>();
     certificates
-        .forEach(c -> certificatesWithTags.add(new GiftCertificateWithTags(c, tagDao.findByCertificateId(c.getId()))));
+        .forEach(
+            c -> certificatesWithTags.add(new GiftCertificateWithTagsDto(c, tagDao.findByCertificateId(c.getId()))));
     return certificatesWithTags;
+  }
+
+  @Override
+  public GiftCertificateWithTagsDto updatePrice(Long id, BigDecimal price) {
+    giftCertificateDao.updatePrice(id, price);
+    return doFindById(id, ExceptionType.RESOURCE_NOT_FOUND);
   }
 }

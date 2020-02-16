@@ -3,6 +3,7 @@ package com.epam.esm.dao.impl;
 import com.epam.esm.dao.GiftCertificateDao;
 import com.epam.esm.mapper.GiftCertificateMapper;
 import com.epam.esm.model.GiftCertificate;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,39 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     insertGiftCertificate(giftCertificate);
     insertAssociativeTableRecords(tagIdsForAddingToCertificate, giftCertificate.getId());
     return giftCertificate.getId();
+  }
+
+  @Override
+  public Optional<GiftCertificate> findById(Long id) {
+    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+      return sqlSession.getMapper(GiftCertificateMapper.class).selectById(id);
+    }
+  }
+
+  @Override
+  public List<GiftCertificate> findCertificatesByCriteria(Map<String, String> parameters) {
+    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+      return sqlSession.getMapper(GiftCertificateMapper.class)
+          .findByCriteria(getListOfParameters(parameters, "tag"),
+              getListOfParameters(parameters, "searchValue"),
+              getParameter(parameters, "sortField"),
+              getParameter(parameters, "sortType"));
+    }
+  }
+
+  private List<String> getListOfParameters(Map<String, String> parameters, String parameterName) {
+    return parameters.containsKey(parameterName) ? Arrays.asList(parameters.get(parameterName).split(" ")) : null;
+  }
+
+  private String getParameter(Map<String, String> parameters, String parameterName) {
+    return parameters.containsKey(parameterName) ? parameters.get(parameterName).toLowerCase() : null;
+  }
+
+  @Override
+  public void updatePrice(Long id, BigDecimal price) {
+    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+      sqlSession.getMapper(GiftCertificateMapper.class).updatePrice(id, price);
+    }
   }
 
   @Override
@@ -76,35 +110,9 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
   }
 
   @Override
-  public List<GiftCertificate> findCertificatesByCriteria(Map<String, String> parameters) {
-    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
-      return sqlSession.getMapper(GiftCertificateMapper.class)
-          .findByCriteria(getListOfParameters(parameters, "tag"),
-              getListOfParameters(parameters, "searchValue"),
-              getParameter(parameters, "sortField"),
-              getParameter(parameters, "sortType"));
-    }
-  }
-
-  private List<String> getListOfParameters(Map<String, String> parameters, String parameterName) {
-    return parameters.containsKey(parameterName) ? Arrays.asList(parameters.get(parameterName).split(" ")) : null;
-  }
-
-  private String getParameter(Map<String, String> parameters, String parameterName) {
-    return parameters.containsKey(parameterName) ? parameters.get(parameterName).toLowerCase() : null;
-  }
-
-  @Override
   public int delete(Long id) {
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
       return sqlSession.getMapper(GiftCertificateMapper.class).delete(id);
-    }
-  }
-
-  @Override
-  public Optional<GiftCertificate> findById(Long id) {
-    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
-      return sqlSession.getMapper(GiftCertificateMapper.class).selectById(id);
     }
   }
 }

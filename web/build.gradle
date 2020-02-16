@@ -8,6 +8,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude module: "spring-boot-starter-tomcat"
     }
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "com.auth0:java-jwt:3.9.0"
     implementation "org.springframework.boot:spring-boot-starter-jetty"
-    implementation "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
 }

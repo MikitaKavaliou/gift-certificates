@@ -1,6 +1,5 @@
 package com.epam.esm.dto;
 
-import com.epam.esm.adapter.LocalDateTimeAdapter;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -10,43 +9,26 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-
-@XmlRootElement(name = "certificate")
-@XmlAccessorType(XmlAccessType.FIELD)
-public class GiftCertificateWithTags {
+public class GiftCertificateWithTagsDto {
 
   private Long id;
   private String name;
   private String description;
   private BigDecimal price;
-  @XmlElement
-  @XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
   @JsonProperty(access = Access.READ_ONLY)
   private LocalDateTime createDate;
-  @XmlElement
-  @XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
   @JsonProperty(access = Access.READ_ONLY)
   private LocalDateTime lastUpdateDate;
   private Integer duration;
-  @XmlElementWrapper(name = "tags")
-  @XmlElement(name = "tag")
   private List<Tag> tags;
-  @XmlElementWrapper(name = "tagsForDeletion")
-  @XmlElement(name = "tagForDeletion")
+  @JsonProperty(access = Access.WRITE_ONLY)
   private List<Tag> tagsForDeletion;
 
-  public GiftCertificateWithTags() {
+  public GiftCertificateWithTagsDto() {
   }
 
-  public GiftCertificateWithTags(GiftCertificate giftCertificate, List<Tag> tags) {
+  public GiftCertificateWithTagsDto(GiftCertificate giftCertificate, List<Tag> tags) {
     this.id = giftCertificate.getId();
     this.name = giftCertificate.getName();
     this.description = giftCertificate.getDescription();
@@ -134,29 +116,5 @@ public class GiftCertificateWithTags {
 
   public void setTagsForDeletion(List<Tag> tagsForDeletion) {
     this.tagsForDeletion = tagsForDeletion;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, name, description, price, createDate, lastUpdateDate, duration, tags);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    GiftCertificateWithTags that = (GiftCertificateWithTags) o;
-    return Objects.equals(id, that.id) &&
-        Objects.equals(name, that.name) &&
-        Objects.equals(description, that.description) &&
-        Objects.equals(price, that.price) &&
-        Objects.equals(createDate, that.createDate) &&
-        Objects.equals(lastUpdateDate, that.lastUpdateDate) &&
-        Objects.equals(duration, that.duration) &&
-        Objects.equals(tags, that.tags);
   }
 }
