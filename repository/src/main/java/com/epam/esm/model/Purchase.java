@@ -1,23 +1,26 @@
 package com.epam.esm.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Purchase {
 
   private Long id;
   private Long userId;
-  private Long giftCertificateId;
   private BigDecimal cost;
+  private LocalDateTime purchaseDate;
+  private Long giftCertificateId;
 
   public Purchase() {
   }
 
-  public Purchase(Long id, Long userId, Long giftCertificateId, BigDecimal cost) {
+  public Purchase(Long id, Long userId, BigDecimal cost, LocalDateTime purchaseDate, Long giftCertificateId) {
     this.id = id;
     this.userId = userId;
-    this.giftCertificateId = giftCertificateId;
     this.cost = cost;
+    this.purchaseDate = purchaseDate;
+    this.giftCertificateId = giftCertificateId;
   }
 
   public Long getId() {
@@ -50,6 +53,14 @@ public class Purchase {
 
   public void setCost(BigDecimal cost) {
     this.cost = cost;
+  }
+
+  public LocalDateTime getPurchaseDate() {
+    return purchaseDate;
+  }
+
+  public void setPurchaseDate(LocalDateTime purchaseDate) {
+    this.purchaseDate = purchaseDate;
   }
 
   @Override

@@ -12,7 +12,9 @@ public interface GiftCertificateDao {
 
   Optional<GiftCertificate> findById(Long id);
 
-  List<GiftCertificate> findCertificatesByCriteria(Map<String, String> parameters);
+  List<GiftCertificate> findByCriteria(Map<String, String> parameters);
+
+  List<GiftCertificate> findByUserId(Long userId);
 
   void update(GiftCertificate giftCertificate, List<Long> tagIdsForAddingToCertificate,
       List<Long> tagIdsForDeletingFromCertificate);

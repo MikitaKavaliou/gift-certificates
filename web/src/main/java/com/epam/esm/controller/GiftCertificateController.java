@@ -3,6 +3,7 @@ package com.epam.esm.controller;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
+import com.epam.esm.security.SecurityUserDetails;
 import com.epam.esm.service.GiftCertificateService;
 import com.epam.esm.validation.GiftCertificateWithTagsValidator;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -80,7 +82,21 @@ public class GiftCertificateController {
   @GetMapping()
   public ResponseEntity<List<GiftCertificateWithTagsDto>> findAllCertificates(
       @RequestParam Map<String, String> parameters) {
-    return new ResponseEntity<>(certificateService.findAll(parameters), HttpStatus.OK);
+    return new ResponseEntity<>(certificateService.findByCriteria(parameters), HttpStatus.OK);
+  }
+
+  @Secured({"ROLE_ADMIN", "ROLE_USER"})
+  @GetMapping("/user_certificates")
+  public ResponseEntity<List<GiftCertificateWithTagsDto>> findUserCertificates() {
+    SecurityUserDetails userDetails = (SecurityUserDetails) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
+    return new ResponseEntity<>(certificateService.findByUserId(userDetails.getId()), HttpStatus.OK);
+  }
+
+  @Secured("ROLE_ADMIN")
+  @GetMapping("/user_certificates/{userId}")
+  public ResponseEntity<List<GiftCertificateWithTagsDto>> findUserCertificates(@PathVariable Long userId) {
+    return new ResponseEntity<>(certificateService.findByUserId(userId), HttpStatus.OK);
   }
 
   /**

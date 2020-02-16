@@ -108,13 +108,20 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   }
 
   @Override
-  public List<GiftCertificateWithTagsDto> findAll(Map<String, String> parameters) {
-    List<GiftCertificate> certificates = giftCertificateDao.findCertificatesByCriteria(parameters);
-    List<GiftCertificateWithTagsDto> certificatesWithTags = new ArrayList<>();
-    certificates
-        .forEach(
-            c -> certificatesWithTags.add(new GiftCertificateWithTagsDto(c, tagDao.findByCertificateId(c.getId()))));
-    return certificatesWithTags;
+  public List<GiftCertificateWithTagsDto> findByCriteria(Map<String, String> parameters) {
+    List<GiftCertificate> certificates = giftCertificateDao.findByCriteria(parameters);
+    return findTagsForGiftCertificates(certificates);
+  }
+
+  private List<GiftCertificateWithTagsDto> findTagsForGiftCertificates(List<GiftCertificate> giftCertificates) {
+    return giftCertificates.stream().map(g -> new GiftCertificateWithTagsDto(g, tagDao.findByCertificateId(g.getId())))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<GiftCertificateWithTagsDto> findByUserId(Long userId) {
+    List<GiftCertificate> certificates = giftCertificateDao.findByUserId(userId);
+    return findTagsForGiftCertificates(certificates);
   }
 
   @Override

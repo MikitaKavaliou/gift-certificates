@@ -96,4 +96,18 @@ public interface GiftCertificateMapper {
       @Result(property = "duration", column = "duration"),
   })
   List<GiftCertificate> findByCriteria(List<String> tags, List<String> values, String sortField, String sortType);
+
+  @Select("SELECT g.gift_certificate_id, g.name, g.description, g.price, g.create_date, g.last_update_date, "
+      + "g.duration FROM gift_certificate g JOIN purchase p ON g.gift_certificate_id=p.gift_certificate_id "
+      + "JOIN user u ON p.user_id=u.user_id WHERE u.user_id=#{userId}")
+  @Results({
+      @Result(property = "id", column = "gift_certificate_id"),
+      @Result(property = "name", column = "name"),
+      @Result(property = "description", column = "description"),
+      @Result(property = "price", column = "price"),
+      @Result(property = "createDate", column = "create_date"),
+      @Result(property = "lastUpdateDate", column = "last_update_date"),
+      @Result(property = "duration", column = "duration"),
+  })
+  List<GiftCertificate> selectByUserId(Long userId);
 }

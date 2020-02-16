@@ -25,7 +25,9 @@ public interface GiftCertificateService extends Service<GiftCertificateWithTagsD
    * @param requestCriteria the request criteria
    * @return the list of found entities
    */
-  List<GiftCertificateWithTagsDto> findAll(Map<String, String> requestCriteria);
+  List<GiftCertificateWithTagsDto> findByCriteria(Map<String, String> requestCriteria);
+
+  List<GiftCertificateWithTagsDto> findByUserId(Long userId);
 
   /**
    * Update price gift certificate with tags dto.

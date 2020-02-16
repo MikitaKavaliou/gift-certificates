@@ -16,21 +16,24 @@ public interface PurchaseMapper {
       + "price FROM gift_certificate WHERE gift_certificate_id=#{giftCertificateId}))")
   void insert(Purchase purchase);
 
-  @Select("SELECT purchase_id, user_id, gift_certificate_id, cost FROM purchase WHERE purchase_id = #{id}")
+  @Select("SELECT purchase_id, user_id, gift_certificate_id, cost, purchase_date FROM purchase WHERE purchase_id = #{id}")
   @Results({
       @Result(property = "id", column = "purchase_id"),
       @Result(property = "userId", column = "user_id"),
       @Result(property = "giftCertificateId", column = "gift_certificate_id"),
       @Result(property = "cost", column = "cost"),
+      @Result(property = "purchaseDate", column = "purchase_date")
   })
   Optional<Purchase> selectById(Long id);
 
-  @Select("SELECT purchase_id, user_id, gift_certificate_id, cost FROM purchase WHERE user_id = #{userId}")
+  @Select("SELECT purchase_id, user_id, gift_certificate_id, cost, purchase_date FROM purchase WHERE user_id = "
+      + "#{userId}")
   @Results({
       @Result(property = "id", column = "purchase_id"),
       @Result(property = "userId", column = "user_id"),
       @Result(property = "giftCertificateId", column = "gift_certificate_id"),
       @Result(property = "cost", column = "cost"),
+      @Result(property = "purchaseDate", column = "purchase_date")
   })
   List<Purchase> selectByUserId(Long userId);
 }

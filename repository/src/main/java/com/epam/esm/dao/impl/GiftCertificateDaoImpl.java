@@ -39,7 +39,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
   }
 
   @Override
-  public List<GiftCertificate> findCertificatesByCriteria(Map<String, String> parameters) {
+  public List<GiftCertificate> findByCriteria(Map<String, String> parameters) {
     try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
       return sqlSession.getMapper(GiftCertificateMapper.class)
           .findByCriteria(getListOfParameters(parameters, "tag"),
@@ -55,6 +55,13 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
   private String getParameter(Map<String, String> parameters, String parameterName) {
     return parameters.containsKey(parameterName) ? parameters.get(parameterName).toLowerCase() : null;
+  }
+
+  @Override
+  public List<GiftCertificate> findByUserId(Long userId) {
+    try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+      return sqlSession.getMapper(GiftCertificateMapper.class).selectByUserId(userId);
+    }
   }
 
   @Override

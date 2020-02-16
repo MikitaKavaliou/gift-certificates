@@ -4,8 +4,6 @@ import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,13 +14,10 @@ public class GiftCertificateWithTagsDto {
   private String name;
   private String description;
   private BigDecimal price;
-  @JsonProperty(access = Access.READ_ONLY)
   private LocalDateTime createDate;
-  @JsonProperty(access = Access.READ_ONLY)
   private LocalDateTime lastUpdateDate;
   private Integer duration;
   private List<Tag> tags;
-  @JsonProperty(access = Access.WRITE_ONLY)
   private List<Tag> tagsForDeletion;
 
   public GiftCertificateWithTagsDto() {
