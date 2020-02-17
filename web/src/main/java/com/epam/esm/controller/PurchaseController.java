@@ -25,8 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/purchases", consumes = MediaType.APPLICATION_JSON_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/purchases")
 public class PurchaseController {
 
   private final PurchaseService purchaseService;
@@ -37,7 +36,7 @@ public class PurchaseController {
   }
 
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @GetMapping()
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<PurchaseWithCertificateDto>> findAllPurchasesByUserId(
       @RequestParam Map<String, String> parameters, HttpServletRequest request) {
     return new ResponseEntity<>(purchaseService.findPurchasesByUserId(((SecurityUserDetails) SecurityContextHolder
@@ -47,7 +46,7 @@ public class PurchaseController {
   }
 
   @Secured({"ROLE_ADMIN"})
-  @GetMapping(params = "userId")
+  @GetMapping(params = "userId", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<PurchaseWithCertificateDto>> findAllPurchasesByUserId(@RequestParam Long userId,
       @RequestParam Map<String, String> parameters, HttpServletRequest request) {
     return ResponseEntity.status(HttpStatus.OK).body(purchaseService.findPurchasesByUserId(userId,
@@ -55,7 +54,7 @@ public class PurchaseController {
   }
 
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PurchaseWithCertificateDto> createPurchase(@RequestBody Purchase purchase,
       HttpServletRequest request) {
     if (!PurchaseValidator.isValidPurchaseForCreation(purchase)) {

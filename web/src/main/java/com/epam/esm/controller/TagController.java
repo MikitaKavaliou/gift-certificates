@@ -48,7 +48,7 @@ public class TagController {
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
-  @PostMapping()
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Tag> createTag(@RequestBody Tag tag) {
     if (!TagValidator.isValidTag(tag)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
@@ -63,7 +63,7 @@ public class TagController {
    * @return the service response
    */
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @GetMapping("/{id}")
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Tag> findTagById(@PathVariable Long id) {
     return ResponseEntity.status(HttpStatus.OK.value()).body(tagService.findById(id));
   }
@@ -74,13 +74,13 @@ public class TagController {
    * @return the service response
    */
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @GetMapping()
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Tag>> findAllTags(@RequestParam Map<String, String> parameters) {
     return ResponseEntity.status(HttpStatus.OK.value()).body(tagService.findAll(parameters));
   }
 
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @GetMapping(params = "mostPopular")
+  @GetMapping(params = "mostPopular", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Tag> findTheMostPopularTag() {
     return ResponseEntity.status(HttpStatus.OK.value()).body(tagService.findTheMostPopularTagOfHighestSpendingUser());
   }
@@ -92,7 +92,7 @@ public class TagController {
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
-  @DeleteMapping("/{id}")
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
     int numberOfDeletedRows = tagService.delete(id);
     return numberOfDeletedRows > 0 ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);

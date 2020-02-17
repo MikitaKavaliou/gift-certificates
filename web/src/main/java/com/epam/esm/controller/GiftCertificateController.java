@@ -30,8 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
  * The type Gift certificate controller. The class used for processing GiftCertificate-related requests.
  */
 @RestController
-@RequestMapping(value = "/certificates", consumes = MediaType.APPLICATION_JSON_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/certificates")
 public class GiftCertificateController {
 
   private final GiftCertificateService certificateService;
@@ -53,7 +52,7 @@ public class GiftCertificateController {
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
-  @PostMapping()
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GiftCertificateWithTagsDto> createCertificate(
       @RequestBody GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
     if (!GiftCertificateWithTagsValidator.isValidGiftCertificateValuesForCreate(giftCertificateWithTagsDto)) {
@@ -69,7 +68,7 @@ public class GiftCertificateController {
    * @param id the id of requested resource
    * @return the service response
    */
-  @GetMapping("/{id}")
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GiftCertificateWithTagsDto> findCertificateById(@PathVariable Long id) {
     return ResponseEntity.status(HttpStatus.OK.value()).body(certificateService.findById(id));
   }
@@ -80,14 +79,14 @@ public class GiftCertificateController {
    * @param parameters the parameters
    * @return the service response
    */
-  @GetMapping()
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<GiftCertificateWithTagsDto>> findAllCertificates(
       @RequestParam Map<String, String> parameters) {
     return ResponseEntity.status(HttpStatus.OK.value()).body(certificateService.findByCriteria(parameters));
   }
 
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @GetMapping(params = "userCertificates")
+  @GetMapping(params = "userCertificates", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<GiftCertificateWithTagsDto>> findUserCertificates(
       @RequestParam Map<String, String> parameters) {
     return ResponseEntity.status(HttpStatus.OK.value()).body(
@@ -96,7 +95,7 @@ public class GiftCertificateController {
   }
 
   @Secured("ROLE_ADMIN")
-  @GetMapping(params = "userId")
+  @GetMapping(params = "userId", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<GiftCertificateWithTagsDto>> findUserCertificates(@RequestParam Long userId,
       @RequestParam Map<String, String> parameters) {
     return ResponseEntity.status(HttpStatus.OK.value()).body(certificateService.findByUserId(userId, parameters));
@@ -110,7 +109,8 @@ public class GiftCertificateController {
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
-  @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GiftCertificateWithTagsDto> updateCertificate(@PathVariable Long id,
       @RequestBody GiftCertificateWithTagsDto giftCertificateWithTagsDto, @RequestParam String tagAction) {
     if (!GiftCertificateWithTagsValidator.isValidGiftCertificateValuesForUpdate(giftCertificateWithTagsDto)) {
@@ -127,7 +127,8 @@ public class GiftCertificateController {
    * @return the response entity
    */
   @Secured("ROLE_ADMIN")
-  @PutMapping(value = "/{id}", params = "price", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/{id}", params = "price", consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GiftCertificateWithTagsDto> updatePrice(@PathVariable Long id,
       @RequestBody PriceDto price) {
     if (price.getPrice() != null && !GiftCertificateWithTagsValidator.isValidCertificatePrice(price.getPrice())) {
@@ -143,7 +144,7 @@ public class GiftCertificateController {
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
-  @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> deleteCertificate(@PathVariable Long id) {
     int numberOfDeletedRows = certificateService.delete(id);
     return numberOfDeletedRows > 0 ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
