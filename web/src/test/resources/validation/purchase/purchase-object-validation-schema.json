@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "userId": {
+      "type": "integer"
+    },
+    "cost": {
+      "type": "number"
+    },
+    "purchaseDate": {
+      "type": "string"
+    },
+    "certificateUrl": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "userId",
+    "cost",
+    "purchaseDate",
+    "certificateUrl"
+  ]
+}

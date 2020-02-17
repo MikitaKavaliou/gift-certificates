@@ -47,7 +47,7 @@ public class PurchaseController {
 
   @Secured({"ROLE_ADMIN"})
   @GetMapping(params = "userId", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<PurchaseWithCertificateDto>> findAllPurchasesByUserId(@RequestParam Long userId,
+  public ResponseEntity<List<PurchaseWithCertificateDto>> findAnyUserPurchases(@RequestParam Long userId,
       @RequestParam Map<String, String> parameters, HttpServletRequest request) {
     return ResponseEntity.status(HttpStatus.OK).body(purchaseService.findPurchasesByUserId(userId,
         UrlProvider.getUrlForCertificateFromPurchasesByUserIdUrl(request.getRequestURL().toString()), parameters));
@@ -63,6 +63,6 @@ public class PurchaseController {
     purchase.setUserId(((SecurityUserDetails) SecurityContextHolder.getContext().getAuthentication()
         .getPrincipal()).getId());
     return new ResponseEntity<>(purchaseService.create(purchase,
-        UrlProvider.getUrlForCertificateFromPurchasesUrl(request.getRequestURL().toString())), HttpStatus.OK);
+        UrlProvider.getUrlForCertificateFromPurchasesUrl(request.getRequestURL().toString())), HttpStatus.CREATED);
   }
 }

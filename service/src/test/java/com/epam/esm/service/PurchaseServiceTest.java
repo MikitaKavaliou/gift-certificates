@@ -68,6 +68,7 @@ public class PurchaseServiceTest {
     List<PurchaseWithCertificateDto> expected = Arrays.asList(new PurchaseWithCertificateDto(firstPurchase,
             resourceUrl + firstPurchase.getGiftCertificateId()),
         new PurchaseWithCertificateDto(secondPurchase, null));
+    Assert.assertEquals(expected.size(), actual.size());
     Assert.assertTrue(new ReflectionEquals(actual.get(0)).matches(expected.get(0)));
   }
 }

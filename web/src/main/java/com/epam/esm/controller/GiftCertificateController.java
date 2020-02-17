@@ -96,7 +96,7 @@ public class GiftCertificateController {
 
   @Secured("ROLE_ADMIN")
   @GetMapping(params = "userId", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<GiftCertificateWithTagsDto>> findUserCertificates(@RequestParam Long userId,
+  public ResponseEntity<List<GiftCertificateWithTagsDto>> findAnyUserCertificates(@RequestParam Long userId,
       @RequestParam Map<String, String> parameters) {
     return ResponseEntity.status(HttpStatus.OK.value()).body(certificateService.findByUserId(userId, parameters));
   }

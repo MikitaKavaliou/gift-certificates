@@ -203,6 +203,7 @@ public class GiftCertificateServiceTest {
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     List<GiftCertificateWithTagsDto> actual = certificateService.findByCriteria(parameters);
     List<GiftCertificateWithTagsDto> expected = Collections.singletonList(giftCertificateWithTags);
+    Assert.assertEquals(expected.size(), actual.size());
     Assert.assertTrue(new ReflectionEquals(actual.get(0)).matches(expected.get(0)));
   }
 
@@ -213,6 +214,7 @@ public class GiftCertificateServiceTest {
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     List<GiftCertificateWithTagsDto> actual = certificateService.findByCriteria(parameters);
     List<GiftCertificateWithTagsDto> expected = Collections.singletonList(giftCertificateWithTags);
+    Assert.assertEquals(expected.size(), actual.size());
     Assert.assertTrue(new ReflectionEquals(actual.get(0)).matches(expected.get(0)));
   }
 
@@ -222,6 +224,7 @@ public class GiftCertificateServiceTest {
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     List<GiftCertificateWithTagsDto> expected = Collections.singletonList(giftCertificateWithTags);
     List<GiftCertificateWithTagsDto> actual = certificateService.findByUserId(1L, new HashMap<>());
+    Assert.assertEquals(expected.size(), actual.size());
     Assert.assertTrue(new ReflectionEquals(actual.get(0)).matches(expected.get(0)));
   }
 

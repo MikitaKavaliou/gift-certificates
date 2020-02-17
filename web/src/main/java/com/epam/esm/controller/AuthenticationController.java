@@ -49,7 +49,7 @@ public class AuthenticationController {
   @PostMapping(value = "/signup")
   public ResponseEntity<TokenDto> signUp(@RequestBody User user) {
     validateUser(user);
-    return ResponseEntity.status(HttpStatus.OK.value()).body(
+    return ResponseEntity.status(HttpStatus.CREATED.value()).body(
         new TokenDto(tokenService.createToken(userService.create(user))));
   }
 

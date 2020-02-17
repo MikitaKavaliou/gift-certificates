@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "items": [
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "userId": {
+          "type": "integer"
+        },
+        "cost": {
+          "type": "number"
+        },
+        "purchaseDate": {
+          "type": "string"
+        },
+        "certificateUrl": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "cost",
+        "purchaseDate",
+        "certificateUrl"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "userId": {
+          "type": "integer"
+        },
+        "cost": {
+          "type": "number"
+        },
+        "purchaseDate": {
+          "type": "string"
+        },
+        "certificateUrl": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "cost",
+        "purchaseDate",
+        "certificateUrl"
+      ]
+    }
+  ]
+}
