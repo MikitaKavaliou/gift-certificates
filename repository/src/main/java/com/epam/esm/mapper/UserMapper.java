@@ -3,11 +3,13 @@ package com.epam.esm.mapper;
 import com.epam.esm.model.User;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 
+@Mapper
 public interface UserMapper {
 
   @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "user_id")
