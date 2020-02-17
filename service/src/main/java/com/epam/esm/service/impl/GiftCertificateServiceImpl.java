@@ -12,7 +12,6 @@ import com.epam.esm.util.PaginationTool;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,41 +84,28 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   }
 
   private void updateCertificateTags(GiftCertificateWithTagsDto certificateWithTags, String tagAction) {
-    if (certificateWithTags.getTags() != null && !certificateWithTags.getTags().isEmpty() && (
-        tagAction.toLowerCase().equals("add")
-            || (tagAction.toLowerCase().equals("delete")))) {
+    if (certificateWithTags.getTags() != null && !certificateWithTags.getTags().isEmpty()
+        && (tagAction.equalsIgnoreCase("add") || (tagAction.equalsIgnoreCase("delete")))) {
       List<Long> foundTagIdList;
-      if (tagAction.toLowerCase().equals("add") && !(foundTagIdList = findTagIdListForAddingToCertificate(
-          certificateWithTags))
-          .isEmpty()) {
+      if (tagAction.equalsIgnoreCase("add")
+          && !(foundTagIdList = findTagIdListForAddingToCertificate(certificateWithTags)).isEmpty()) {
         giftCertificateMapper.insertAssociativeRecords(foundTagIdList, certificateWithTags.getId());
-      } else if (tagAction.toLowerCase().equals("delete") && !(foundTagIdList =
-          findTagIdListForDeletingTagsFromCertificate(
-              certificateWithTags))
-          .isEmpty()) {
+      } else if (tagAction.equalsIgnoreCase("delete")
+          && !(foundTagIdList = findTagIdListForDeletingFromCertificate(certificateWithTags)).isEmpty()) {
         giftCertificateMapper.deleteAssociativeRecords(foundTagIdList, certificateWithTags.getId());
       }
     }
   }
 
   private List<Long> findTagIdListForAddingToCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
-    List<Long> tagIdListForCreation = new ArrayList<>();
-    if (giftCertificateWithTagsDto.getTags() != null) {
-      tagIdListForCreation.addAll(removeExistedCertificateTagsFromSet(
-          createTagIdSetForAddingToCertificate(giftCertificateWithTagsDto.getTags()),
-          giftCertificateWithTagsDto.getId()));
-    }
-    return tagIdListForCreation;
+    return new ArrayList<>
+        (removeExistedCertificateTagsFromSet(createTagIdSetForAddingToCertificate(giftCertificateWithTagsDto.getTags()),
+            giftCertificateWithTagsDto.getId()));
   }
 
-  private List<Long> findTagIdListForDeletingTagsFromCertificate(
-      GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
-    List<Long> tagIdListForDeletion = new ArrayList<>();
-    if (giftCertificateWithTagsDto.getTags() != null) {
-      giftCertificateWithTagsDto.getTags()
-          .forEach(tag -> tagMapper.selectByName(tag.getName()).ifPresent(t -> tagIdListForDeletion.add(t.getId())));
-    }
-    return tagIdListForDeletion;
+  private List<Long> findTagIdListForDeletingFromCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
+    return giftCertificateWithTagsDto.getTags().stream().filter(t -> tagMapper.selectByName(t.getName()).isPresent())
+        .map(Tag::getId).collect(Collectors.toList());
   }
 
   private boolean hasFieldsForCertificateUpdate(GiftCertificate giftCertificate) {
@@ -128,10 +114,9 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   }
 
   private Set<Long> createTagIdSetForAddingToCertificate(List<Tag> tags) {
-    Set<Long> tagIdSet = new HashSet<>();
-    tags.forEach(t -> tagMapper.selectByName(t.getName())
-        .ifPresentOrElse(tag -> tagIdSet.add(tag.getId()), () -> tagIdSet.add(insertTag(t))));
-    return tagIdSet;
+    return tags.stream()
+        .peek(tag -> tagMapper.selectByName(tag.getName()).ifPresentOrElse(foundTag -> tag.setId(foundTag.getId()),
+            () -> tag.setId(insertTag(tag)))).map(Tag::getId).collect(Collectors.toSet());
   }
 
   private Long insertTag(Tag tag) {

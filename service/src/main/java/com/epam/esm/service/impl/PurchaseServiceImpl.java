@@ -3,9 +3,7 @@ package com.epam.esm.service.impl;
 import com.epam.esm.dto.PurchaseWithCertificateDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
-import com.epam.esm.mapper.GiftCertificateMapper;
 import com.epam.esm.mapper.PurchaseMapper;
-import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Purchase;
 import com.epam.esm.service.PurchaseService;
 import com.epam.esm.util.PaginationTool;
@@ -13,34 +11,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PurchaseServiceImp implements PurchaseService {
+public class PurchaseServiceImpl implements PurchaseService {
 
   private final PurchaseMapper purchaseMapper;
-  private final GiftCertificateMapper giftCertificateMapper;
 
   @Autowired
-  public PurchaseServiceImp(PurchaseMapper purchaseMapper,
-      GiftCertificateMapper giftCertificateMapper) {
-
+  public PurchaseServiceImpl(PurchaseMapper purchaseMapper) {
     this.purchaseMapper = purchaseMapper;
-    this.giftCertificateMapper = giftCertificateMapper;
   }
 
   @Override
   public PurchaseWithCertificateDto create(Purchase purchase, String resourceUrl) {
-    GiftCertificate giftCertificate = giftCertificateMapper.selectById(purchase.getGiftCertificateId())
-        .orElseThrow(() -> new ServerException(ExceptionType.INCORRECT_INPUT_DATA));
     purchase = purchaseMapper.selectById(insertPurchase(purchase))
         .orElseThrow(() -> new ServerException(ExceptionType.ERROR_CREATING_ENTITY));
-    return new PurchaseWithCertificateDto(purchase, resourceUrl + giftCertificate.getId());
+    return new PurchaseWithCertificateDto(purchase, resourceUrl + purchase.getId());
   }
 
   private Long insertPurchase(Purchase purchase) {
-    purchaseMapper.insert(purchase);
-    return purchase.getId();
+    try {
+      purchaseMapper.insert(purchase);
+      return purchase.getId();
+    } catch (DataIntegrityViolationException ex) {
+      throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
+    }
   }
 
   @Override

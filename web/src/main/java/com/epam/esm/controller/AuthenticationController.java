@@ -37,7 +37,7 @@ public class AuthenticationController {
 
   @Secured("ROLE_GUEST")
   @PostMapping(value = "/login")
-  public ResponseEntity<?> login(@RequestBody User user) {
+  public ResponseEntity<TokenDto> login(@RequestBody User user) {
     validateUser(user);
     authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(),
         user.getPassword()));
@@ -47,7 +47,7 @@ public class AuthenticationController {
 
   @Secured("ROLE_GUEST")
   @PostMapping(value = "/signup")
-  public ResponseEntity<?> signUp(@RequestBody User user) {
+  public ResponseEntity<TokenDto> signUp(@RequestBody User user) {
     validateUser(user);
     return ResponseEntity.status(HttpStatus.OK.value()).body(
         new TokenDto(tokenService.createToken(userService.create(user))));
