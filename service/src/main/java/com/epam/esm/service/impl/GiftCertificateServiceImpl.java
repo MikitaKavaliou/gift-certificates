@@ -8,15 +8,17 @@ import com.epam.esm.mapper.TagMapper;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
 import com.epam.esm.service.GiftCertificateService;
-import com.epam.esm.util.PaginationTool;
+import com.epam.esm.util.PaginationUtil;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,12 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   private final GiftCertificateMapper giftCertificateMapper;
   private final TagMapper tagMapper;
 
+  /**
+   * Instantiates a new Gift certificate service.
+   *
+   * @param giftCertificateMapper the gift certificate mapper
+   * @param tagMapper             the tag mapper
+   */
   @Autowired
   public GiftCertificateServiceImpl(GiftCertificateMapper giftCertificateMapper, TagMapper tagMapper) {
     this.giftCertificateMapper = giftCertificateMapper;
@@ -55,30 +63,39 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   @Transactional
   @Override
   public GiftCertificateWithTagsDto create(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
-    return doFindById(createGiftCertificate(giftCertificateWithTagsDto), ExceptionType.ERROR_CREATING_ENTITY);
+    Long certificateId = insertCertificate(giftCertificateWithTagsDto);
+    addTagsToCertificate(giftCertificateWithTagsDto, certificateId);
+    return doFindById(certificateId, ExceptionType.ERROR_CREATING_ENTITY);
   }
 
-  private Long createGiftCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
-    List<Long> listOfTagId = new ArrayList<>();
-    if (giftCertificateWithTagsDto.getTags() != null) {
-      listOfTagId.addAll(createTagIdSetForAddingToCertificate(giftCertificateWithTagsDto.getTags()));
-    }
+  private Long insertCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
     GiftCertificate giftCertificate = giftCertificateWithTagsDto.getGiftCertificate();
     giftCertificateMapper.insert(giftCertificate);
-    giftCertificateMapper.insertAssociativeRecords(listOfTagId, giftCertificate.getId());
     return giftCertificate.getId();
+  }
+
+  private void addTagsToCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto, Long giftCertificateId) {
+    if (giftCertificateWithTagsDto.getTags() != null && !giftCertificateWithTagsDto.getTags().isEmpty()) {
+      giftCertificateMapper
+          .insertAssociativeRecords(createTagIdSetForReceivedTags(giftCertificateWithTagsDto.getTags()),
+              giftCertificateId);
+    }
   }
 
   @Transactional
   @Override
   public GiftCertificateWithTagsDto update(GiftCertificateWithTagsDto giftCertificateWithTagsDto, String tagAction) {
-    updateCertificateFields(giftCertificateWithTagsDto.getGiftCertificate());
-    updateCertificateTags(giftCertificateWithTagsDto, tagAction);
-    return doFindById(giftCertificateWithTagsDto.getId(), ExceptionType.RESOURCE_NOT_FOUND);
+    try {
+      updateCertificateFields(giftCertificateWithTagsDto.getGiftCertificate());
+      updateCertificateTags(giftCertificateWithTagsDto, tagAction);
+      return doFindById(giftCertificateWithTagsDto.getId(), ExceptionType.RESOURCE_NOT_FOUND);
+    } catch (DataIntegrityViolationException e) {
+      throw new ServerException(ExceptionType.RESOURCE_NOT_FOUND);
+    }
   }
 
   private void updateCertificateFields(GiftCertificate giftCertificate) {
-    if (hasFieldsForCertificateUpdate(giftCertificate)) {
+    if (hasFieldsForUpdate(giftCertificate)) {
       giftCertificateMapper.update(giftCertificate);
     }
   }
@@ -86,65 +103,58 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   private void updateCertificateTags(GiftCertificateWithTagsDto certificateWithTags, String tagAction) {
     if (certificateWithTags.getTags() != null && !certificateWithTags.getTags().isEmpty()
         && (tagAction.equalsIgnoreCase("add") || (tagAction.equalsIgnoreCase("delete")))) {
-      List<Long> foundTagIdList;
+      Set<Long> foundTagIdList;
       if (tagAction.equalsIgnoreCase("add")
-          && !(foundTagIdList = findTagIdListForAddingToCertificate(certificateWithTags)).isEmpty()) {
+          && !(foundTagIdList =
+          removeTagIdsAlreadyAddedToCertificate(createTagIdSetForReceivedTags(certificateWithTags.getTags()),
+              certificateWithTags.getId())).isEmpty()) {
         giftCertificateMapper.insertAssociativeRecords(foundTagIdList, certificateWithTags.getId());
-      } else if (tagAction.equalsIgnoreCase("delete")
-          && !(foundTagIdList = findTagIdListForDeletingFromCertificate(certificateWithTags)).isEmpty()) {
-        giftCertificateMapper.deleteAssociativeRecords(foundTagIdList, certificateWithTags.getId());
+      } else if (tagAction.equalsIgnoreCase("delete")) {
+        giftCertificateMapper.deleteAssociativeRecords(certificateWithTags.getTags(), certificateWithTags.getId());
       }
     }
   }
 
-  private List<Long> findTagIdListForAddingToCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
-    return new ArrayList<>
-        (removeExistedCertificateTagsFromSet(createTagIdSetForAddingToCertificate(giftCertificateWithTagsDto.getTags()),
-            giftCertificateWithTagsDto.getId()));
-  }
-
-  private List<Long> findTagIdListForDeletingFromCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
-    return giftCertificateWithTagsDto.getTags().stream().filter(t -> tagMapper.selectByName(t.getName()).isPresent())
-        .map(Tag::getId).collect(Collectors.toList());
-  }
-
-  private boolean hasFieldsForCertificateUpdate(GiftCertificate giftCertificate) {
+  private boolean hasFieldsForUpdate(GiftCertificate giftCertificate) {
     return giftCertificate.getName() != null || giftCertificate.getDescription() != null ||
         giftCertificate.getPrice() != null || giftCertificate.getDuration() != null;
   }
 
-  private Set<Long> createTagIdSetForAddingToCertificate(List<Tag> tags) {
-    return tags.stream()
-        .peek(tag -> tagMapper.selectByName(tag.getName()).ifPresentOrElse(foundTag -> tag.setId(foundTag.getId()),
-            () -> tag.setId(insertTag(tag)))).map(Tag::getId).collect(Collectors.toSet());
-  }
-
-  private Long insertTag(Tag tag) {
-    tagMapper.insert(tag);
-    return tag.getId();
-  }
-
-  private Set<Long> removeExistedCertificateTagsFromSet(Set<Long> tagIdSet, Long certificateId) {
-    return tagIdSet.stream().
-        filter(id -> tagMapper.selectTagIdByTagIdAndCertificateId(id, certificateId).isEmpty())
+  private Set<Long> createTagIdSetForReceivedTags(List<Tag> tags) {
+    Set<Tag> existingTags =
+        new HashSet<>(tagMapper.selectByNames(tags.stream().map(Tag::getName).collect(Collectors.toList())));
+    Set<Tag> newTags =
+        createNewTags(tags.stream().filter(t -> !containsTagWithTagName(existingTags, t)).collect(Collectors.toSet()));
+    return Stream.concat(existingTags.stream().map(Tag::getId), newTags.stream().map(Tag::getId))
         .collect(Collectors.toSet());
+  }
+
+  private Set<Tag> createNewTags(Set<Tag> tags) {
+    if (!tags.isEmpty()) {
+      tagMapper.insertSet(tags);
+    }
+    return tags;
+  }
+
+  private boolean containsTagWithTagName(Set<Tag> tags, Tag tag) {
+    return tags.stream().map(Tag::getName).collect(Collectors.toSet()).contains(tag.getName());
+  }
+
+  private Set<Long> removeTagIdsAlreadyAddedToCertificate(Set<Long> tagIdSet, Long certificateId) {
+    tagIdSet.removeAll(tagMapper.selectTagIdListByTagIdSetAndCertificateId(tagIdSet, certificateId));
+    return tagIdSet;
   }
 
   @Override
   public List<GiftCertificateWithTagsDto> findByCriteria(Map<String, String> parameters) {
-    List<GiftCertificate> certificates = giftCertificateMapper.findByCriteria(getListOfParameters(parameters, "tag"),
-        getListOfParameters(parameters, "searchValue"),
-        getParameter(parameters, "sortField"),
-        getParameter(parameters, "sortType"), PaginationTool.createRowBounds(parameters));
+    List<GiftCertificate> certificates =
+        giftCertificateMapper.findByCriteria(getTagList(parameters), parameters,
+            PaginationUtil.createRowBounds(parameters));
     return findTagsForGiftCertificates(certificates);
   }
 
-  private List<String> getListOfParameters(Map<String, String> parameters, String parameterName) {
-    return parameters.containsKey(parameterName) ? Arrays.asList(parameters.get(parameterName).split(" ")) : null;
-  }
-
-  private String getParameter(Map<String, String> parameters, String parameterName) {
-    return parameters.containsKey(parameterName) ? parameters.get(parameterName).toLowerCase() : null;
+  private List<String> getTagList(Map<String, String> parameters) {
+    return parameters.containsKey("tag") ? Arrays.asList(parameters.get("tag").split(" ")) : null;
   }
 
   private List<GiftCertificateWithTagsDto> findTagsForGiftCertificates(List<GiftCertificate> giftCertificates) {
@@ -156,7 +166,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   @Override
   public List<GiftCertificateWithTagsDto> findByUserId(Long userId, Map<String, String> parameters) {
     List<GiftCertificate> certificates = giftCertificateMapper.selectByUserId(userId,
-        PaginationTool.createRowBounds(parameters));
+        PaginationUtil.createRowBounds(parameters));
     return findTagsForGiftCertificates(certificates);
   }
 

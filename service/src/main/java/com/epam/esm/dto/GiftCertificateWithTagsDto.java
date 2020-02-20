@@ -1,5 +1,6 @@
 package com.epam.esm.dto;
 
+import com.epam.esm.adapter.LocalDateTimeAdapter;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -7,16 +8,28 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+@XmlRootElement(name = "giftCertificate")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class GiftCertificateWithTagsDto {
 
   private Long id;
   private String name;
   private String description;
   private BigDecimal price;
+  @XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
   private LocalDateTime createDate;
+  @XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
   private LocalDateTime lastUpdateDate;
   private Integer duration;
+  @XmlElementWrapper(name = "tags")
+  @XmlElement(name = "tag")
   private List<Tag> tags;
 
   public GiftCertificateWithTagsDto() {

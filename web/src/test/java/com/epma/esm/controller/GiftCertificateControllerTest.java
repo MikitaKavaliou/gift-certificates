@@ -3,15 +3,14 @@ package com.epma.esm.controller;
 
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
-import static org.hamcrest.Matchers.is;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import com.epam.esm.config.RepositoryConfig;
 import com.epam.esm.config.SecurityConfig;
 import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.config.WebConfig;
+import com.epam.esm.dto.GiftCertificatePriceDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
-import com.epam.esm.dto.PriceDto;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Role;
 import com.epam.esm.model.Tag;
@@ -75,8 +74,8 @@ public class GiftCertificateControllerTest {
     GiftCertificate giftCertificate = new GiftCertificate(10L, "name", "description", BigDecimal.valueOf(3.5),
         null, null, 5);
     Tag tag = new Tag(1L, "for_rent");
-    adminToken = tokenService.createToken(new User(47L, "username2", "password", Role.ADMIN));
-    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER));
+    adminToken = tokenService.createToken(new User(8L, "username2", "password", Role.ADMIN)).getToken();
+    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER)).getToken();
     giftCertificateWithTagsDto = new GiftCertificateWithTagsDto(giftCertificate, Collections.singletonList(tag));
     jsonSchemaFactory = JsonSchemaFactory
         .newBuilder().setValidationConfiguration(ValidationConfiguration
@@ -91,17 +90,6 @@ public class GiftCertificateControllerTest {
         .then()
         .statusCode(HttpStatus.OK.value())
         .assertThat().body(matchesJsonSchemaInClasspath(CERTIFICATE_LIST_SCHEMA_NAME).using(jsonSchemaFactory));
-  }
-
-  @Test
-  public void findAllCertificatesTestWithPagination() {
-    String pageParameters = "?page=1&perPage=2";
-    given().when().get(ALL_CERTIFICATES_ENDPOINT + pageParameters)
-        .then()
-        .statusCode(HttpStatus.OK.value())
-        .assertThat()
-        .body(matchesJsonSchemaInClasspath(CERTIFICATE_LIST_SCHEMA_NAME).using(jsonSchemaFactory))
-        .body("size()", is(2));
   }
 
   @Test
@@ -295,11 +283,11 @@ public class GiftCertificateControllerTest {
   @Test
   public void updatePriceUnauthorizedReturnsExceptionObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    PriceDto priceDto = new PriceDto(BigDecimal.valueOf(5));
+    GiftCertificatePriceDto giftCertificatePriceDto = new GiftCertificatePriceDto(BigDecimal.valueOf(5));
     given()
         .header(AUTHORIZATION_HEADER_NAME, "someToken")
         .contentType(ContentType.JSON)
-        .body(objectMapper.writeValueAsString(priceDto))
+        .body(objectMapper.writeValueAsString(giftCertificatePriceDto))
         .when()
         .put(ALL_CERTIFICATES_ENDPOINT + "/47?price")
         .then()
@@ -311,11 +299,11 @@ public class GiftCertificateControllerTest {
   @Test
   public void updatePriceForbiddenReturnsExceptionObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    PriceDto priceDto = new PriceDto(BigDecimal.valueOf(5));
+    GiftCertificatePriceDto giftCertificatePriceDto = new GiftCertificatePriceDto(BigDecimal.valueOf(5));
     given()
         .header(AUTHORIZATION_HEADER_NAME, userToken)
         .contentType(ContentType.JSON)
-        .body(objectMapper.writeValueAsString(priceDto))
+        .body(objectMapper.writeValueAsString(giftCertificatePriceDto))
         .when()
         .put(ALL_CERTIFICATES_ENDPOINT + "/47?price")
         .then()
@@ -327,11 +315,11 @@ public class GiftCertificateControllerTest {
   @Test
   public void updatePriceNegativePriceReturnsExceptionObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    PriceDto priceDto = new PriceDto(BigDecimal.valueOf(-5));
+    GiftCertificatePriceDto giftCertificatePriceDto = new GiftCertificatePriceDto(BigDecimal.valueOf(-5));
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .contentType(ContentType.JSON)
-        .body(objectMapper.writeValueAsString(priceDto))
+        .body(objectMapper.writeValueAsString(giftCertificatePriceDto))
         .when()
         .put(ALL_CERTIFICATES_ENDPOINT + "/47?price")
         .then()
@@ -343,11 +331,11 @@ public class GiftCertificateControllerTest {
   @Test
   public void updatePriceNullPriceReturnsExceptionObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    PriceDto priceDto = new PriceDto(BigDecimal.valueOf(-5));
+    GiftCertificatePriceDto giftCertificatePriceDto = new GiftCertificatePriceDto();
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .contentType(ContentType.JSON)
-        .body(objectMapper.writeValueAsString(priceDto))
+        .body(objectMapper.writeValueAsString(giftCertificatePriceDto))
         .when()
         .put(ALL_CERTIFICATES_ENDPOINT + "/47?price")
         .then()
@@ -359,11 +347,11 @@ public class GiftCertificateControllerTest {
   @Test
   public void updatePriceCorrectDataReturnsUpdatedObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    PriceDto priceDto = new PriceDto(BigDecimal.valueOf(5));
+    GiftCertificatePriceDto giftCertificatePriceDto = new GiftCertificatePriceDto(BigDecimal.valueOf(5));
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .contentType(ContentType.JSON)
-        .body(objectMapper.writeValueAsString(priceDto))
+        .body(objectMapper.writeValueAsString(giftCertificatePriceDto))
         .when()
         .put(ALL_CERTIFICATES_ENDPOINT + "/47?price")
         .then()

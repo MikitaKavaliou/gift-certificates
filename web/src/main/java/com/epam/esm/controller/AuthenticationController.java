@@ -19,14 +19,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * The type Authentication controller.
+ */
 @RestController
-@RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}, consumes =
+    {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AuthenticationController {
 
   private final AuthenticationManager authenticationManager;
   private final TokenService tokenService;
   private final UserService userService;
 
+  /**
+   * Instantiates a new Authentication controller.
+   *
+   * @param authenticationManager the authentication manager
+   * @param tokenService          the token service
+   * @param userService           the user service
+   */
   @Autowired
   public AuthenticationController(AuthenticationManager authenticationManager, TokenService tokenService,
       UserService userService) {
@@ -35,24 +46,43 @@ public class AuthenticationController {
     this.userService = userService;
   }
 
+  /**
+   * Login response entity.
+   *
+   * @param user the user
+   * @return the response entity
+   */
   @Secured("ROLE_GUEST")
   @PostMapping(value = "/login")
   public ResponseEntity<TokenDto> login(@RequestBody User user) {
     validateUser(user);
-    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(),
-        user.getPassword()));
-    return ResponseEntity.status(HttpStatus.OK.value()).body(
-        new TokenDto(tokenService.createToken(userService.findByUsername(user.getUsername()))));
+    User authenticatedUser = (User) authenticationManager
+        .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())).getPrincipal();
+    return ResponseEntity
+        .status(HttpStatus.OK.value())
+        .body(tokenService.createToken(authenticatedUser));
   }
 
+  /**
+   * Sign up response entity.
+   *
+   * @param user the user
+   * @return the response entity
+   */
   @Secured("ROLE_GUEST")
   @PostMapping(value = "/signup")
   public ResponseEntity<TokenDto> signUp(@RequestBody User user) {
     validateUser(user);
-    return ResponseEntity.status(HttpStatus.CREATED.value()).body(
-        new TokenDto(tokenService.createToken(userService.create(user))));
+    return ResponseEntity
+        .status(HttpStatus.CREATED.value())
+        .body(tokenService.createToken(userService.create(user)));
   }
 
+  /**
+   * Validate user.
+   *
+   * @param user the user
+   */
   public void validateUser(User user) {
     if (!UserValidator.isValidUser(user)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);

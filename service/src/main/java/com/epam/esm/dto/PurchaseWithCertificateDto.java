@@ -1,15 +1,23 @@
 package com.epam.esm.dto;
 
+import com.epam.esm.adapter.LocalDateTimeAdapter;
 import com.epam.esm.model.Purchase;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+@XmlRootElement(name = "purchase")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class PurchaseWithCertificateDto {
 
   private Long id;
   private Long userId;
   private BigDecimal cost;
+  @XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
   private LocalDateTime purchaseDate;
   private String certificateUrl;
 

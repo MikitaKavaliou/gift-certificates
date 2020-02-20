@@ -2,12 +2,19 @@ package com.epam.esm.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
+import java.util.Locale;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
+import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 @Configuration
 @EnableWebMvc
@@ -19,5 +26,21 @@ public class WebConfig implements WebMvcConfigurer {
     builder.serializationInclusion(JsonInclude.Include.NON_NULL);
     builder.failOnUnknownProperties(true);
     converters.add(new MappingJackson2HttpMessageConverter(builder.build()));
+    converters.add(new Jaxb2RootElementHttpMessageConverter());
+  }
+
+  @Bean
+  public LocaleResolver localeResolver() {
+    AcceptHeaderLocaleResolver resolver = new AcceptHeaderLocaleResolver();
+    resolver.setDefaultLocale(Locale.US);
+    return resolver;
+  }
+
+  @Bean
+  public MessageSource messageSource() {
+    ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+    messageSource.setBasename("classpath:locale/messages");
+    messageSource.setDefaultEncoding("UTF-8");
+    return messageSource;
   }
 }

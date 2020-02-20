@@ -5,10 +5,11 @@ import com.epam.esm.exception.ServerException;
 import com.epam.esm.mapper.TagMapper;
 import com.epam.esm.model.Tag;
 import com.epam.esm.service.TagService;
-import com.epam.esm.util.PaginationTool;
+import com.epam.esm.util.PaginationUtil;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -31,14 +32,12 @@ public class TagServiceImpl implements TagService {
 
   @Override
   public Tag create(Tag tag) {
-    return tagMapper.selectByName(tag.getName())
-        .orElseGet(() -> tagMapper.selectById(insertTag(tag))
-            .orElseThrow(() -> new ServerException(ExceptionType.ERROR_CREATING_ENTITY)));
-  }
-
-  private Long insertTag(Tag tag) {
-    tagMapper.insert(tag);
-    return tag.getId();
+    try {
+      tagMapper.insert(tag);
+      return tag;
+    } catch (DataIntegrityViolationException e) {
+      throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
+    }
   }
 
   @Override
@@ -48,7 +47,7 @@ public class TagServiceImpl implements TagService {
 
   @Override
   public List<Tag> findAll(Map<String, String> parameters) {
-    return tagMapper.selectAll(PaginationTool.createRowBounds(parameters));
+    return tagMapper.selectAll(PaginationUtil.createRowBounds(parameters));
   }
 
   @Override

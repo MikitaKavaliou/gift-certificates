@@ -1,11 +1,11 @@
 package com.epam.esm.controller;
 
+import com.epam.esm.dto.TagsListDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.Tag;
 import com.epam.esm.service.TagService;
 import com.epam.esm.validation.TagValidator;
-import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  * The type Tag controller. The class used for processing Tag-related requests.
  */
 @RestController
-@RequestMapping(value = "/tags", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/tags", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class TagController {
 
   private final TagService tagService;
@@ -47,7 +47,7 @@ public class TagController {
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
-  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
   public ResponseEntity<Tag> createTag(@RequestBody Tag tag) {
     if (!TagValidator.isValidTag(tag)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
@@ -62,7 +62,7 @@ public class TagController {
    * @return the service response
    */
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{id}")
   public ResponseEntity<Tag> findTagById(@PathVariable Long id) {
     return ResponseEntity.status(HttpStatus.OK.value()).body(tagService.findById(id));
   }
@@ -70,16 +70,22 @@ public class TagController {
   /**
    * Find all service returns response.
    *
+   * @param parameters the parameters
    * @return the service response
    */
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Tag>> findAllTags(@RequestParam Map<String, String> parameters) {
-    return ResponseEntity.status(HttpStatus.OK.value()).body(tagService.findAll(parameters));
+  @GetMapping()
+  public ResponseEntity<TagsListDto> findAllTags(@RequestParam Map<String, String> parameters) {
+    return ResponseEntity.status(HttpStatus.OK.value()).body(new TagsListDto(tagService.findAll(parameters)));
   }
 
+  /**
+   * Find the most popular tag response entity.
+   *
+   * @return the response entity
+   */
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @GetMapping(params = "mostPopular", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(params = "mostPopular")
   public ResponseEntity<Tag> findTheMostPopularTag() {
     return ResponseEntity.status(HttpStatus.OK.value()).body(tagService.findTheMostPopularTagOfHighestSpendingUser());
   }
@@ -91,9 +97,10 @@ public class TagController {
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{id}")
   public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
     int numberOfDeletedRows = tagService.delete(id);
-    return numberOfDeletedRows > 0 ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    return numberOfDeletedRows > 0 ? ResponseEntity.status(HttpStatus.OK).build() :
+        ResponseEntity.status(HttpStatus.NOT_FOUND).build();
   }
 }

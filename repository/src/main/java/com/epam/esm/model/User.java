@@ -1,7 +1,9 @@
 package com.epam.esm.model;
 
 import java.util.Objects;
+import javax.xml.bind.annotation.XmlRootElement;
 
+@XmlRootElement
 public class User {
 
   private Long id;
@@ -22,6 +24,10 @@ public class User {
   public User(Long id, String username, Role role) {
     this.id = id;
     this.username = username;
+    this.role = role;
+  }
+
+  public User(Role role) {
     this.role = role;
   }
 

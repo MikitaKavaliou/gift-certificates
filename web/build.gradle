@@ -12,10 +12,12 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-aop"
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "com.auth0:java-jwt:${jwtVersion}"
-    testImplementation("io.rest-assured:spring-mock-mvc:3.3.0") {
+    implementation "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
+    implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
+    testImplementation("io.rest-assured:spring-mock-mvc:${springMockMvcVersion}") {
         exclude module: "jaxb-osgi"
     }
-    testImplementation "io.rest-assured:json-schema-validator:3.3.0"
-    testImplementation "com.sun.xml.bind:jaxb-osgi:2.3.1"
+    testImplementation "io.rest-assured:json-schema-validator:${jsonSchemaValidatorVersion}"
+    testImplementation "com.sun.xml.bind:jaxb-osgi:${jaxbOsgiVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }

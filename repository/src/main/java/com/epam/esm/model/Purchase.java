@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+
 public class Purchase {
 
   private Long id;
@@ -20,6 +21,11 @@ public class Purchase {
     this.userId = userId;
     this.cost = cost;
     this.purchaseDate = purchaseDate;
+    this.giftCertificateId = giftCertificateId;
+  }
+
+  public Purchase(Long userId, Long giftCertificateId) {
+    this.userId = userId;
     this.giftCertificateId = giftCertificateId;
   }
 

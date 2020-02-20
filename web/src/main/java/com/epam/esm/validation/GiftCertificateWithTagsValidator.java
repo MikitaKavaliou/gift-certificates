@@ -4,6 +4,7 @@ import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.model.Tag;
 import java.math.BigDecimal;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 public class GiftCertificateWithTagsValidator {
 
@@ -17,8 +18,9 @@ public class GiftCertificateWithTagsValidator {
   }
 
   public static boolean isValidGiftCertificateValuesForCreate(GiftCertificateWithTagsDto certificate) {
-    return certificate.getName() != null && isValidGiftCertificateName(certificate.getName())
-        && certificate.getDescription() != null && isValidGiftCertificateDescription(certificate.getDescription())
+    return StringUtils.isNotBlank(certificate.getName()) && isValidGiftCertificateName(certificate.getName())
+        && StringUtils.isNotBlank(certificate.getDescription())
+        && isValidGiftCertificateDescription(certificate.getDescription())
         && certificate.getPrice() != null && isValidCertificatePrice(certificate.getPrice())
         && certificate.getDuration() != null && isValidCertificateDuration(certificate.getDuration())
         && isValidTagList(certificate.getTags());

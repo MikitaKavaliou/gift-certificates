@@ -1,6 +1,7 @@
 package com.epam.esm.service;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +27,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GiftCertificateServiceTest {
@@ -77,7 +79,7 @@ public class GiftCertificateServiceTest {
 
   @Test
   public void createTestCreateCertificateAddExistedTagReturnsCertificatesWithTags() {
-    when(tagMapper.selectByName(any())).thenReturn(Optional.of(tag));
+    when(tagMapper.selectByNames(any())).thenReturn(tags);
     when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     GiftCertificateWithTagsDto actual = certificateService.create(giftCertificateWithTags);
@@ -86,7 +88,7 @@ public class GiftCertificateServiceTest {
 
   @Test
   public void createTestCreateCertificateInsertNewTagReturnsCertificatesWithTags() {
-    when(tagMapper.selectByName(any())).thenReturn(Optional.empty());
+    when(tagMapper.selectByNames(any())).thenReturn(new ArrayList<>());
     when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     GiftCertificateWithTagsDto actual = certificateService.create(giftCertificateWithTags);
@@ -103,20 +105,47 @@ public class GiftCertificateServiceTest {
     Assert.assertTrue(new ReflectionEquals(actual).matches(expected));
   }
 
+  @Test
+  public void createTestCreateCertificateWithEmptyTagsReturnsCertificatesWithTags() {
+    when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
+    List<Tag> emptyTagList = new ArrayList<>();
+    when(tagMapper.selectByCertificateId(any())).thenReturn(emptyTagList);
+    GiftCertificateWithTagsDto expected = new GiftCertificateWithTagsDto(certificate, emptyTagList);
+    GiftCertificateWithTagsDto actual = certificateService
+        .create(new GiftCertificateWithTagsDto(certificate, new ArrayList<>()));
+    Assert.assertTrue(new ReflectionEquals(actual).matches(expected));
+  }
+
   @Test(expected = ServerException.class)
-  public void createTestCreateCertificateErrorCreatingCertificateThrowsException() {
+  public void createTestErrorCreatingCertificateThrowsException() {
     when(certificateMapper.selectById(any())).thenReturn(Optional.empty());
     certificateService.create(giftCertificateWithTags);
   }
 
   @Test(expected = ServerException.class)
-  public void updateTestNoFieldsAndTagsForUpdateAnNotExistedCertificateIdThrowsException() {
+  public void updateTestErrorAddingTagToNotExistingCertificateThrowsException() {
+    doThrow(DataIntegrityViolationException.class).when(certificateMapper).insertAssociativeRecords(any(), any());
+    certificateService.update(giftCertificateWithTags, "add");
+  }
+
+  @Test(expected = ServerException.class)
+  public void updateTestErrorFindingNotExistedCertificateIdThrowsException() {
     when(certificateMapper.selectById(any())).thenReturn(Optional.empty());
     certificateService.update(new GiftCertificateWithTagsDto(), "delete");
   }
 
-  @Test()
-  public void updateTestUpdateDescriptionAndTagsForUpdateAndNullTagsReturnsCertificateWithTags() {
+  @Test
+  public void updateTestUpdateNameAndNullTagsReturnsCertificateWithTags() {
+    when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
+    when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
+    GiftCertificateWithTagsDto certificate = new GiftCertificateWithTagsDto();
+    certificate.setName("name");
+    GiftCertificateWithTagsDto actual = certificateService.update(certificate, "delete");
+    Assert.assertTrue(new ReflectionEquals(actual).matches(giftCertificateWithTags));
+  }
+
+  @Test
+  public void updateTestUpdateDescriptionAndNullTagsReturnsCertificateWithTags() {
     when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     GiftCertificateWithTagsDto certificate = new GiftCertificateWithTagsDto();
@@ -125,8 +154,8 @@ public class GiftCertificateServiceTest {
     Assert.assertTrue(new ReflectionEquals(actual).matches(giftCertificateWithTags));
   }
 
-  @Test()
-  public void updateTestUpdateDurationAndTagsForUpdateAndNullTagsReturnsCertificateWithTags() {
+  @Test
+  public void updateTestUpdateDurationAndNullTagsReturnsCertificateWithTags() {
     when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     GiftCertificateWithTagsDto certificate = new GiftCertificateWithTagsDto();
@@ -135,14 +164,24 @@ public class GiftCertificateServiceTest {
     Assert.assertTrue(new ReflectionEquals(actual).matches(giftCertificateWithTags));
   }
 
-  @Test()
-  public void updateTestUpdatePriceAndTagsForUpdateAndEmptyTagsReturnsCertificateWithTags() {
+  @Test
+  public void updateTestUpdatePriceAndNullTagsReturnsCertificateWithTags() {
     when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     GiftCertificateWithTagsDto giftCertificateWithTagsDto = new GiftCertificateWithTagsDto();
     giftCertificateWithTagsDto.setTags(new ArrayList<>());
     giftCertificateWithTagsDto.setPrice(BigDecimal.valueOf(10));
     GiftCertificateWithTagsDto actual = certificateService.update(giftCertificateWithTagsDto, "delete");
+    Assert.assertTrue(new ReflectionEquals(actual).matches(giftCertificateWithTags));
+  }
+
+  @Test
+  public void updateTestEmptyTagsReturnsCertificateWithTags() {
+    when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
+    when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
+    GiftCertificateWithTagsDto giftCertificateWithTagsDto = new GiftCertificateWithTagsDto();
+    giftCertificateWithTagsDto.setTags(new ArrayList<>());
+    GiftCertificateWithTagsDto actual = certificateService.update(giftCertificateWithTagsDto, "add");
     Assert.assertTrue(new ReflectionEquals(actual).matches(giftCertificateWithTags));
   }
 
@@ -158,8 +197,8 @@ public class GiftCertificateServiceTest {
   public void updateTestUpdateCertificateFieldsAndAddNewTagsToCertificateReturnsCertificateWithTags() {
     when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
-    when(tagMapper.selectByName(any())).thenReturn(Optional.of(tag));
-    when(tagMapper.selectTagIdByTagIdAndCertificateId(any(), any())).thenReturn(Optional.empty());
+    when(tagMapper.selectByNames(any())).thenReturn(Collections.singletonList(tag));
+    when(tagMapper.selectTagIdListByTagIdSetAndCertificateId(any(), any())).thenReturn(new ArrayList<>());
     GiftCertificateWithTagsDto actual = certificateService.update(giftCertificateWithTags, "add");
     Assert.assertTrue(new ReflectionEquals(actual).matches(giftCertificateWithTags));
   }
@@ -168,8 +207,9 @@ public class GiftCertificateServiceTest {
   public void updateTestUpdateCertificateFieldsAndAddExistedTagsToCertificateReturnsCertificateWithTags() {
     when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
-    when(tagMapper.selectByName(any())).thenReturn(Optional.of(tag));
-    when(tagMapper.selectTagIdByTagIdAndCertificateId(any(), any())).thenReturn(Optional.of(tag.getId()));
+    when(tagMapper.selectByNames(any())).thenReturn(Collections.singletonList(tag));
+    when(tagMapper.selectTagIdListByTagIdSetAndCertificateId(any(), any()))
+        .thenReturn(Collections.singletonList(tag.getId()));
     GiftCertificateWithTagsDto actual = certificateService.update(giftCertificateWithTags, "add");
     Assert.assertTrue(new ReflectionEquals(actual).matches(giftCertificateWithTags));
   }
@@ -178,7 +218,6 @@ public class GiftCertificateServiceTest {
   public void updateTestUpdateCertificateFieldsAndDeleteExistedTagsReturnsCertificateWithTags() {
     when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
-    when(tagMapper.selectByName(any())).thenReturn(Optional.of(tag));
     GiftCertificateWithTagsDto actual = certificateService.update(giftCertificateWithTags, "delete");
     Assert.assertTrue(new ReflectionEquals(actual).matches(giftCertificateWithTags));
   }
@@ -187,19 +226,17 @@ public class GiftCertificateServiceTest {
   public void updateTestUpdateCertificateFieldsAndDeleteNotExistedTagsReturnsCertificateWithTags() {
     when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
-    when(tagMapper.selectByName(any())).thenReturn(Optional.empty());
     GiftCertificateWithTagsDto actual = certificateService.update(giftCertificateWithTags, "delete");
     Assert.assertTrue(new ReflectionEquals(actual).matches(giftCertificateWithTags));
   }
 
   @Test
-  public void findByCriteriaTestWithParameters() {
+  public void findByCriteriaTestWithTagNames() {
     Map<String, String> parameters = new HashMap<>();
     parameters.put("tag", "tag names");
-    parameters.put("searchValue", "value search");
-    parameters.put("sortField", "name");
-    parameters.put("sortType", "asc");
-    when(certificateMapper.findByCriteria(any(), any(), any(), any(), any())).thenReturn(certificates);
+    parameters.put("name", "value");
+    parameters.put("description", "description");
+    when(certificateMapper.findByCriteria(any(), any(), any())).thenReturn(certificates);
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     List<GiftCertificateWithTagsDto> actual = certificateService.findByCriteria(parameters);
     List<GiftCertificateWithTagsDto> expected = Collections.singletonList(giftCertificateWithTags);
@@ -208,9 +245,11 @@ public class GiftCertificateServiceTest {
   }
 
   @Test
-  public void findByCriteriaTestWithOutParameters() {
+  public void findByCriteriaTestWithoutTagNames() {
     Map<String, String> parameters = new HashMap<>();
-    when(certificateMapper.findByCriteria(any(), any(), any(), any(), any())).thenReturn(certificates);
+    parameters.put("name", "value");
+    parameters.put("description", "description");
+    when(certificateMapper.findByCriteria(any(), any(), any())).thenReturn(certificates);
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     List<GiftCertificateWithTagsDto> actual = certificateService.findByCriteria(parameters);
     List<GiftCertificateWithTagsDto> expected = Collections.singletonList(giftCertificateWithTags);
@@ -234,7 +273,7 @@ public class GiftCertificateServiceTest {
     certificateService.updatePrice(1L, BigDecimal.valueOf(10.5));
   }
 
-  @Test()
+  @Test
   public void updatePriceTestCorrectPriceUpdate() {
     when(certificateMapper.selectById(any())).thenReturn(Optional.of(certificate));
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);

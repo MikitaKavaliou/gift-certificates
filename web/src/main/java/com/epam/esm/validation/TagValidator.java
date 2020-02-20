@@ -1,6 +1,7 @@
 package com.epam.esm.validation;
 
 import com.epam.esm.model.Tag;
+import org.apache.commons.lang3.StringUtils;
 
 public class TagValidator {
 
@@ -11,7 +12,6 @@ public class TagValidator {
   }
 
   public static boolean isValidTag(Tag tag) {
-    String tagName = tag.getName();
-    return tagName != null && !tagName.isEmpty() && tagName.length() <= MAX_TAG_NAME_LENGTH;
+    return StringUtils.isNotBlank(tag.getName()) && tag.getName().length() <= MAX_TAG_NAME_LENGTH;
   }
 }

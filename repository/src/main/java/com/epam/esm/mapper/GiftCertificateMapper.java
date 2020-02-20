@@ -1,9 +1,12 @@
 package com.epam.esm.mapper;
 
 import com.epam.esm.model.GiftCertificate;
+import com.epam.esm.model.Tag;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -22,15 +25,17 @@ public interface GiftCertificateMapper {
       "#{price}, #{duration})")
   void insert(GiftCertificate certificate);
 
-  @Insert({"<script>",
+  @Insert({
+      "<script>",
       "INSERT INTO tag_gift_certificate (tag_id, gift_certificate_id) VALUES",
-      "<foreach item='item' index='index' collection='tagIdList' separator=','>",
-      " (#{item}, #{certificateId})",
-      "</foreach>",
+      "      <foreach item='item' index='index' collection='tagIdList' separator=','>",
+      "        (#{item}, #{certificateId})",
+      "      </foreach>",
       "</script>"})
-  void insertAssociativeRecords(List<Long> tagIdList, Long certificateId);
+  void insertAssociativeRecords(Set<Long> tagIdList, Long certificateId);
 
-  @Update({"<script>",
+  @Update({
+      "<script>",
       "UPDATE gift_certificate",
       " <set>",
       "    <if test='name != null'> name=#{name},</if>",
@@ -45,13 +50,16 @@ public interface GiftCertificateMapper {
   @Update("UPDATE gift_certificate SET price=#{price} WHERE gift_certificate_id=#{id}")
   void updatePrice(Long id, BigDecimal price);
 
-  @Delete({"<script>",
-      "DELETE FROM tag_gift_certificate WHERE ",
-      "<foreach item='item' index='index' collection='tagIdList'  open='(' separator=' OR ' close=')'>",
-      "(tag_id = #{item} AND gift_certificate_id = #{certificateId})",
+  @Delete({
+      "<script>",
+      "DELETE TG FROM tag_gift_certificate TG ",
+      "JOIN tag T ON T.tag_id=TG.tag_id ",
+      "WHERE ",
+      "<foreach item='item' index='index' collection='tags'  open='(' separator=' OR ' close=')'>",
+      "(T.name = #{item.name} AND gift_certificate_id = #{certificateId})",
       "</foreach>",
       "</script>"})
-  void deleteAssociativeRecords(List<Long> tagIdList, Long certificateId);
+  void deleteAssociativeRecords(List<Tag> tags, Long certificateId);
 
   @Delete("DELETE FROM gift_certificate WHERE gift_certificate_id = #{certificateId}")
   int delete(Long certificateId);
@@ -69,8 +77,9 @@ public interface GiftCertificateMapper {
   })
   Optional<GiftCertificate> selectById(Long id);
 
-  @Select({"<script>",
-      "SELECT DISTINCT G.gift_certificate_id, g.name, description, price, create_date, last_update_date, duration",
+  @Select({
+      "<script>",
+      "SELECT DISTINCT G.gift_certificate_id,G.name,G.description,G.price,G.create_date,G.last_update_date,G.duration",
       " <if test=\"tags!=null\">",
       "     , group_concat(T.name order by T.name) as 'tags'",
       " </if>",
@@ -79,12 +88,20 @@ public interface GiftCertificateMapper {
       "     JOIN tag_gift_certificate TG ON G.gift_certificate_id=TG.gift_certificate_id ",
       "     JOIN TAG T ON TG.tag_id=T.tag_id",
       " </if>",
-      " <if test=\"values!=null\">",
-      "     WHERE ",
-      "      <foreach item='item' index='index' collection='values' open='(' separator=' OR ' close=')'>",
-      "          G.name LIKE CONCAT('%',#{item},'%') OR G.description LIKE CONCAT('%',#{item},'%')",
-      "      </foreach>",
-      " </if>",
+      "<where>",
+      "      <if test=\"parameters.name!=null\">",
+      "         G.name LIKE CONCAT('%', #{parameters.name},'%')",
+      "      </if>",
+      "      <if test=\"parameters.description!=null\">",
+      "         AND G.description LIKE CONCAT('%', #{parameters.description},'%')",
+      "      </if>",
+      "      <if test=\"parameters.minPrice!=null\">",
+      "         AND G.price >= #{parameters.minPrice} ",
+      "      </if>",
+      "      <if test=\"parameters.maxPrice!=null\">",
+      "         AND G.price &lt;= #{parameters.maxPrice} ",
+      "      </if>",
+      "</where>",
       " <if test=\"tags!=null\">",
       "     group by G.gift_certificate_id ",
       "     HAVING ",
@@ -92,10 +109,10 @@ public interface GiftCertificateMapper {
       "          tags REGEXP CONCAT('^',#{item},'$|^',#{item},',a*|a*,',#{item},',a*|a*,',#{item},'$')",
       "      </foreach>",
       " </if>",
-      " <if test=\"sortField eq 'name' || sortField eq 'create_date' || sortField eq 'last_update_date'\">",
-      "     ORDER BY ${sortField}",
-      "      <if test=\"sortType eq 'asc' || sortType eq 'desc'\">",
-      "          ${sortType}",
+      " <if test=\"parameters.sortField eq 'name' || parameters.sortField eq 'create_date' || parameters.sortField eq 'last_update_date'\">",
+      "     ORDER BY ${parameters.sortField}",
+      "      <if test=\"parameters.sortType eq 'asc' || parameters.sortType eq 'desc'\">",
+      "          ${parameters.sortType}",
       "      </if>",
       " </if>",
       "</script>"})
@@ -108,11 +125,10 @@ public interface GiftCertificateMapper {
       @Result(property = "lastUpdateDate", column = "last_update_date"),
       @Result(property = "duration", column = "duration"),
   })
-  List<GiftCertificate> findByCriteria(List<String> tags, List<String> values, String sortField, String sortType,
-      RowBounds rowBounds);
+  List<GiftCertificate> findByCriteria(List<String> tags, Map<String, String> parameters, RowBounds rowBounds);
 
-  @Select("SELECT g.gift_certificate_id, g.name, g.description, g.price, g.create_date, g.last_update_date, "
-      + "g.duration FROM gift_certificate g JOIN purchase p ON g.gift_certificate_id=p.gift_certificate_id "
+  @Select("SELECT G.gift_certificate_id, G.name, G.description, G.price, G.create_date, G.last_update_date, "
+      + "G.duration FROM gift_certificate G JOIN purchase p ON g.gift_certificate_id=p.gift_certificate_id "
       + "JOIN user u ON p.user_id=u.user_id WHERE u.user_id=#{userId}")
   @Results({
       @Result(property = "id", column = "gift_certificate_id"),

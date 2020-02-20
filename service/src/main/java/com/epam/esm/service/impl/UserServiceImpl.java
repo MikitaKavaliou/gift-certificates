@@ -5,11 +5,17 @@ import com.epam.esm.exception.ServerException;
 import com.epam.esm.mapper.UserMapper;
 import com.epam.esm.model.Role;
 import com.epam.esm.model.User;
+import com.epam.esm.security.SecurityUserDetails;
 import com.epam.esm.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * The type User service.
+ */
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -17,6 +23,8 @@ public class UserServiceImpl implements UserService {
 
   /**
    * Instantiates a new Tag service.
+   *
+   * @param userMapper the user mapper
    */
   @Autowired
   public UserServiceImpl(UserMapper userMapper) {
@@ -25,17 +33,13 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User create(final User user) {
-    prepareUserForInsert(user);
-    userMapper.selectByUsername(user.getUsername()).ifPresentOrElse(u -> {
-      throw new ServerException(ExceptionType.USER_ALREADY_EXISTS);
-    }, () -> setNewUserFields(user, userMapper.selectById(insertUser(user))
-        .orElseThrow(() -> new ServerException(ExceptionType.ERROR_CREATING_ENTITY))));
-    return user;
-  }
-
-  private Long insertUser(User user) {
-    userMapper.insert(user);
-    return user.getId();
+    try {
+      prepareUserForInsert(user);
+      userMapper.insert(user);
+      return user;
+    } catch (DataIntegrityViolationException e) {
+      throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
+    }
   }
 
   private void prepareUserForInsert(User user) {
@@ -43,16 +47,9 @@ public class UserServiceImpl implements UserService {
     user.setRole(Role.USER);
   }
 
-  private void setNewUserFields(User user, User newUser) {
-    user.setId(newUser.getId());
-    user.setUsername(newUser.getUsername());
-    user.setPassword(newUser.getPassword());
-    user.setRole(newUser.getRole());
-  }
-
   @Override
-  public User findByUsername(String username) {
-    return userMapper.selectByUsername(username)
-        .orElseThrow(() -> new ServerException(ExceptionType.AUTHENTICATION_FAILURE));
+  public UserDetails loadUserByUsername(String username) {
+    return new SecurityUserDetails(userMapper.selectByUsername(username)
+        .orElseThrow(() -> new ServerException(ExceptionType.AUTHENTICATION_FAILURE)));
   }
 }

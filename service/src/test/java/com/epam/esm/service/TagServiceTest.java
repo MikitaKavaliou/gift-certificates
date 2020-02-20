@@ -2,6 +2,7 @@ package com.epam.esm.service;
 
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -20,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TagServiceTest {
@@ -36,24 +38,14 @@ public class TagServiceTest {
   }
 
   @Test
-  public void createTestInsertExistingTagReturnsExistingTag() {
-    when(tagMapper.selectByName(any())).thenReturn(Optional.of(tag));
-    Tag actual = tagService.create(tag);
-    Assert.assertEquals(tag, actual);
-  }
-
-  @Test
   public void createTestInsertNewTagReturnsNewTag() {
-    when(tagMapper.selectByName(any())).thenReturn(Optional.empty());
-    when(tagMapper.selectById(any())).thenReturn(Optional.of(tag));
     Tag actual = tagService.create(tag);
     Assert.assertEquals(tag, actual);
   }
 
   @Test(expected = ServerException.class)
   public void createTestInsertNewTagThrowsException() {
-    when(tagMapper.selectByName(any())).thenReturn(Optional.empty());
-    when(tagMapper.selectById(any())).thenReturn(Optional.empty());
+    doThrow(DataIntegrityViolationException.class).when(tagMapper).insert(any());
     tagService.create(tag);
   }
 

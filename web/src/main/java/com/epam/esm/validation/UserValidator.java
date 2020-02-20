@@ -1,6 +1,7 @@
 package com.epam.esm.validation;
 
 import com.epam.esm.model.User;
+import org.apache.commons.lang3.StringUtils;
 
 public class UserValidator {
 
@@ -12,7 +13,7 @@ public class UserValidator {
   }
 
   public static boolean isValidUser(User user) {
-    return user.getPassword() != null && user.getPassword().length() <= MAX_PASSWORD_LENGTH &&
-        user.getUsername() != null && user.getUsername().length() <= MAX_USERNAME_LENGTH;
+    return StringUtils.isNotBlank(user.getPassword()) && user.getPassword().length() <= MAX_PASSWORD_LENGTH &&
+        StringUtils.isNotBlank(user.getUsername()) && user.getUsername().length() <= MAX_USERNAME_LENGTH;
   }
 }

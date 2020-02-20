@@ -60,7 +60,7 @@ public class AuthenticationControllerTest {
     RestAssuredMockMvc.webAppContextSetup(webApplicationContext);
     RestAssuredMockMvc.mockMvc(mockMvc);
     MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilter(authenticationFilter);
-    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER));
+    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER)).getToken();
     jsonSchemaFactory = JsonSchemaFactory
         .newBuilder().setValidationConfiguration(ValidationConfiguration
             .newBuilder().setDefaultVersion(SchemaVersion.DRAFTV4)
@@ -160,7 +160,7 @@ public class AuthenticationControllerTest {
         .when()
         .post(SIGNUP_ENDPOINT)
         .then()
-        .statusCode(HttpStatus.CONFLICT.value())
+        .statusCode(HttpStatus.BAD_REQUEST.value())
         .assertThat()
         .body(matchesJsonSchemaInClasspath(EXCEPTION_OBJECT_SCHEMA_NAME).using(jsonSchemaFactory));
   }

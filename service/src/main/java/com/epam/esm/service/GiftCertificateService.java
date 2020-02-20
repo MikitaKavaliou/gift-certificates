@@ -11,30 +11,50 @@ import java.util.Map;
  */
 public interface GiftCertificateService {
 
+  /**
+   * Create gift certificate with tags, returns created certificate with tags.
+   *
+   * @param giftCertificateWithTagsDto the gift certificate with tags dto
+   * @return the created gift certificate with tags
+   */
   GiftCertificateWithTagsDto create(GiftCertificateWithTagsDto giftCertificateWithTagsDto);
 
+  /**
+   * Find certificate by id, returns found certificate with tags.
+   *
+   * @param id the certificate id
+   * @return the gift certificate with tags
+   */
   GiftCertificateWithTagsDto findById(Long id);
 
   /**
-   * Find certificates with tags returns found entities list.
+   * Find certificates with tags by criteria, returns found list of found certificates with tags.
    *
    * @param requestCriteria the request criteria
-   * @return the list of found entities
+   * @return the list of certificates with tags
    */
   List<GiftCertificateWithTagsDto> findByCriteria(Map<String, String> requestCriteria);
 
+  /**
+   * Find by user id, returns list of certificates with tags.
+   *
+   * @param userId     the user id
+   * @param parameters the parameters
+   * @return the list of certificates with tags
+   */
   List<GiftCertificateWithTagsDto> findByUserId(Long userId, Map<String, String> parameters);
 
   /**
-   * Update certificate with passed tags returns id of update entity long.
+   * Update certificate with passed tags, returns updated certificate with tags.
    *
    * @param giftCertificateWithTagsDto the certificate with tags
-   * @return the long id of created entity
+   * @param tagAction                  the tag action
+   * @return updated certificate with tags
    */
   GiftCertificateWithTagsDto update(GiftCertificateWithTagsDto giftCertificateWithTagsDto, String tagAction);
 
   /**
-   * Update price gift certificate with tags dto.
+   * Update price, returns updated gift certificate with tags .
    *
    * @param id    the id
    * @param price the price
@@ -42,5 +62,11 @@ public interface GiftCertificateService {
    */
   GiftCertificateWithTagsDto updatePrice(Long id, BigDecimal price);
 
+  /**
+   * Delete certificate by id, returns int number of deleted rows.
+   *
+   * @param id the certificate id
+   * @return the int number of deleted rows
+   */
   int delete(Long id);
 }

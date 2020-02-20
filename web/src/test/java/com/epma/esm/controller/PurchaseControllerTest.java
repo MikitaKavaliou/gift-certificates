@@ -8,7 +8,7 @@ import com.epam.esm.config.RepositoryConfig;
 import com.epam.esm.config.SecurityConfig;
 import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.config.WebConfig;
-import com.epam.esm.model.Purchase;
+import com.epam.esm.dto.PurchaseGiftCertificateIdDto;
 import com.epam.esm.model.Role;
 import com.epam.esm.model.User;
 import com.epam.esm.security.AuthenticationFilter;
@@ -63,8 +63,8 @@ public class PurchaseControllerTest {
     RestAssuredMockMvc.webAppContextSetup(webApplicationContext);
     RestAssuredMockMvc.mockMvc(mockMvc);
     MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilter(authenticationFilter);
-    adminToken = tokenService.createToken(new User(47L, "username2", "password", Role.ADMIN));
-    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER));
+    adminToken = tokenService.createToken(new User(8L, "username2", "password", Role.ADMIN)).getToken();
+    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER)).getToken();
     jsonSchemaFactory = JsonSchemaFactory
         .newBuilder().setValidationConfiguration(ValidationConfiguration
             .newBuilder().setDefaultVersion(SchemaVersion.DRAFTV4)
@@ -130,8 +130,7 @@ public class PurchaseControllerTest {
   @Test
   public void createPurchaseCorrectDataReturnsCreatedObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    Purchase purchase = new Purchase();
-    purchase.setGiftCertificateId(13L);
+    PurchaseGiftCertificateIdDto purchase = new PurchaseGiftCertificateIdDto(13L);
     given()
         .contentType(ContentType.JSON)
         .body(objectMapper.writeValueAsString(purchase))
@@ -147,8 +146,7 @@ public class PurchaseControllerTest {
   @Test
   public void createPurchaseIncorrectDataReturnsExceptionObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    Purchase purchase = new Purchase();
-    purchase.setGiftCertificateId(-13L);
+    PurchaseGiftCertificateIdDto purchase = new PurchaseGiftCertificateIdDto(-13L);
     given()
         .contentType(ContentType.JSON)
         .body(objectMapper.writeValueAsString(purchase))
@@ -164,8 +162,7 @@ public class PurchaseControllerTest {
   @Test
   public void createPurchaseUnauthorizedReturnsExceptionObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    Purchase purchase = new Purchase();
-    purchase.setGiftCertificateId(-13L);
+    PurchaseGiftCertificateIdDto purchase = new PurchaseGiftCertificateIdDto(-13L);
     given()
         .contentType(ContentType.JSON)
         .body(objectMapper.writeValueAsString(purchase))

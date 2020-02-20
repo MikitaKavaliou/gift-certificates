@@ -1,12 +1,14 @@
 package com.epam.esm.service;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.mapper.UserMapper;
 import com.epam.esm.model.Role;
 import com.epam.esm.model.User;
+import com.epam.esm.security.SecurityUserDetails;
 import com.epam.esm.service.impl.UserServiceImpl;
 import java.util.Optional;
 import org.junit.Assert;
@@ -15,7 +17,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceTest {
@@ -33,34 +37,28 @@ public class UserServiceTest {
 
   @Test(expected = ServerException.class)
   public void createTestUserWithExistedUsernameThrowsException() {
-    when(userMapper.selectByUsername(any())).thenReturn(Optional.of(user));
+    doThrow(DataIntegrityViolationException.class).when(userMapper).insert(any());
     userService.create(user);
   }
 
-  @Test(expected = ServerException.class)
-  public void createTestErrorCreatingUserThrowsException() {
-    when(userMapper.selectByUsername(any())).thenReturn(Optional.empty());
-    when(userMapper.selectById(any())).thenReturn(Optional.empty());
-    userService.create(user);
-  }
-
-  @Test()
+  @Test
   public void createTestCreatesUserReturnsUser() {
-    when(userMapper.selectByUsername(any())).thenReturn(Optional.empty());
-    when(userMapper.selectById(any())).thenReturn(Optional.of(user));
     User actual = userService.create(user);
     Assert.assertEquals(user, actual);
   }
 
   @Test
-  public void findByUsernameTestExistedUsernameReturnsUser() {
+  public void loadUserByUsernameTestCorrectFoundUser() {
+    User user = new User(1L, "username", "password", Role.USER);
+    SecurityUserDetails expected = new SecurityUserDetails(user);
     when(userMapper.selectByUsername(any())).thenReturn(Optional.of(user));
-    Assert.assertEquals(user, userService.findByUsername("username"));
+    SecurityUserDetails actual = (SecurityUserDetails) userService.loadUserByUsername("username");
+    Assert.assertTrue(new ReflectionEquals(actual).matches(expected));
   }
 
   @Test(expected = ServerException.class)
-  public void findByUsernameTestNotExistedUsernameThrowsException() {
+  public void loadUserByUsernameTestEmptyUserThrowsException() {
     when(userMapper.selectByUsername(any())).thenReturn(Optional.empty());
-    Assert.assertEquals(user, userService.findByUsername("username"));
+    userService.loadUserByUsername("username");
   }
 }

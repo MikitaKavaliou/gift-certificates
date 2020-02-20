@@ -63,8 +63,8 @@ public class TagControllerTest {
     RestAssuredMockMvc.webAppContextSetup(webApplicationContext);
     RestAssuredMockMvc.mockMvc(mockMvc);
     MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilter(authenticationFilter);
-    adminToken = tokenService.createToken(new User(47L, "username2", "password", Role.ADMIN));
-    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER));
+    adminToken = tokenService.createToken(new User(47L, "username2", "password", Role.ADMIN)).getToken();
+    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER)).getToken();
     jsonSchemaFactory = JsonSchemaFactory
         .newBuilder().setValidationConfiguration(ValidationConfiguration
             .newBuilder().setDefaultVersion(SchemaVersion.DRAFTV4)

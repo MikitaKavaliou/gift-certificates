@@ -3,12 +3,12 @@ package com.epam.esm.util;
 import java.util.Map;
 import org.apache.ibatis.session.RowBounds;
 
-public class PaginationTool {
+public class PaginationUtil {
 
   private static final String PAGE_NUMBER_REQUEST_PARAMETER = "page";
   private static final String RECORDS_PER_PAGE_REQUEST_PARAMETER = "perPage";
 
-  private PaginationTool() {
+  private PaginationUtil() {
 
   }
 
