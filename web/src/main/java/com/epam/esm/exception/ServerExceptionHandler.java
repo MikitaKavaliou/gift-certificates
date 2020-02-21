@@ -56,7 +56,7 @@ public class ServerExceptionHandler {
   @ExceptionHandler(NoHandlerFoundException.class)
   public @ResponseBody
   ResponseEntity<ServerErrorDto> handleNoHandlerFoundException(HttpServletRequest request) {
-    return createServiceResponse(ExceptionType.NOT_FOUND_HANDLER, request);
+    return createServiceResponse(ExceptionType.HANDLER_NOT_FOUND, request);
   }
 
   /**

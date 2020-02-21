@@ -12,7 +12,7 @@ public enum ExceptionType {
   AUTHENTICATION_FAILURE("authentication.failure", 401, 40101),
   ACCESS_DENIED("access.denied", 403, 40301),
   RESOURCE_NOT_FOUND("resource.not.found", 404, 40401),
-  NOT_FOUND_HANDLER("not.found.handler", 404, 40402),
+  HANDLER_NOT_FOUND("handler.not.found", 404, 40402),
   INTERNAL_SERVER_ERROR("internal.server.error", 500, 50001),
   ERROR_CREATING_ENTITY("error.creating.entity", 500, 50002);
 
