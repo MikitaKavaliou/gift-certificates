@@ -5,31 +5,24 @@ import org.apache.ibatis.session.RowBounds;
 
 public class PaginationUtil {
 
-  private static final String PAGE_NUMBER_REQUEST_PARAMETER = "page";
-  private static final String RECORDS_PER_PAGE_REQUEST_PARAMETER = "perPage";
+  private static final String PAGE_NUMBER_PARAMETER = "page";
+  private static final String RECORDS_PER_PAGE_PARAMETER = "perPage";
+  private static final Integer DEFAULT_PAGE_NUMBER = 1;
+  private static final Integer DEFAULT_PER_PAGE_RECORDS = 5;
 
   private PaginationUtil() {
 
   }
 
   public static RowBounds createRowBounds(Map<String, String> parameters) {
-    int pageNumber;
-    int perPage;
-    if (parameters.containsKey(PAGE_NUMBER_REQUEST_PARAMETER)
-        && parameters.containsKey(RECORDS_PER_PAGE_REQUEST_PARAMETER)
-        && (pageNumber = getNumericValue(parameters.get(PAGE_NUMBER_REQUEST_PARAMETER))) > 0
-        && (perPage = getNumericValue(parameters.get(RECORDS_PER_PAGE_REQUEST_PARAMETER))) > 0) {
-      return new RowBounds(perPage * (pageNumber - 1), perPage);
-    } else {
-      return new RowBounds(RowBounds.NO_ROW_OFFSET, RowBounds.NO_ROW_LIMIT);
-    }
-  }
-
-  private static int getNumericValue(String parameter) {
     try {
-      return Math.max(Integer.parseInt(parameter), 0);
+      int pageNumber = Integer
+          .parseInt(parameters.getOrDefault(PAGE_NUMBER_PARAMETER, DEFAULT_PAGE_NUMBER.toString()));
+      int perPage = Integer
+          .parseInt(parameters.getOrDefault(RECORDS_PER_PAGE_PARAMETER, DEFAULT_PER_PAGE_RECORDS.toString()));
+      return new RowBounds(perPage * (pageNumber - 1), perPage);
     } catch (NumberFormatException e) {
-      return 0;
+      return new RowBounds(DEFAULT_PER_PAGE_RECORDS * (DEFAULT_PAGE_NUMBER - 1), DEFAULT_PER_PAGE_RECORDS);
     }
   }
 }

@@ -100,7 +100,9 @@ public class TagController {
   @DeleteMapping(value = "/{id}")
   public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
     int numberOfDeletedRows = tagService.delete(id);
-    return numberOfDeletedRows > 0 ? ResponseEntity.status(HttpStatus.OK).build() :
-        ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    if (numberOfDeletedRows < 1) {
+      throw new ServerException(ExceptionType.RESOURCE_NOT_FOUND);
+    }
+    return ResponseEntity.status(HttpStatus.OK).build();
   }
 }

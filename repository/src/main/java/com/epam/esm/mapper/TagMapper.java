@@ -65,13 +65,6 @@ public interface TagMapper {
   })
   List<Tag> selectByCertificateId(Long certificateId);
 
-  @Select("SELECT tag_id, name FROM tag WHERE name = #{name}")
-  @Results({
-      @Result(property = "id", column = "tag_id"),
-      @Result(property = "name", column = "name"),
-  })
-  Optional<Tag> selectByName(String name);
-
   @Select({
       "<script>",
       "SELECT DISTINCT tag_id, name FROM tag WHERE ",

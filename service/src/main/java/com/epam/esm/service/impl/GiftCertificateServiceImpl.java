@@ -75,9 +75,10 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   }
 
   private void addTagsToCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto, Long giftCertificateId) {
-    if (giftCertificateWithTagsDto.getTags() != null && !giftCertificateWithTagsDto.getTags().isEmpty()) {
+    List<Tag> tags = giftCertificateWithTagsDto.getTags();
+    if (tags != null && !tags.isEmpty()) {
       giftCertificateMapper
-          .insertAssociativeRecords(createTagIdSetForReceivedTags(giftCertificateWithTagsDto.getTags()),
+          .insertAssociativeRecords(createTagIdSetForReceivedTags(tags),
               giftCertificateId);
     }
   }
@@ -101,16 +102,16 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   }
 
   private void updateCertificateTags(GiftCertificateWithTagsDto certificateWithTags, String tagAction) {
-    if (certificateWithTags.getTags() != null && !certificateWithTags.getTags().isEmpty()
+    List<Tag> tags = certificateWithTags.getTags();
+    if (tags != null && tags.isEmpty()
         && (tagAction.equalsIgnoreCase("add") || (tagAction.equalsIgnoreCase("delete")))) {
-      Set<Long> foundTagIdList;
+      Set<Long> tagIdList;
       if (tagAction.equalsIgnoreCase("add")
-          && !(foundTagIdList =
-          removeTagIdsAlreadyAddedToCertificate(createTagIdSetForReceivedTags(certificateWithTags.getTags()),
-              certificateWithTags.getId())).isEmpty()) {
-        giftCertificateMapper.insertAssociativeRecords(foundTagIdList, certificateWithTags.getId());
+          && !(tagIdList =
+          removeAlreadyAddedTagIds(createTagIdSetForReceivedTags(tags), certificateWithTags.getId())).isEmpty()) {
+        giftCertificateMapper.insertAssociativeRecords(tagIdList, certificateWithTags.getId());
       } else if (tagAction.equalsIgnoreCase("delete")) {
-        giftCertificateMapper.deleteAssociativeRecords(certificateWithTags.getTags(), certificateWithTags.getId());
+        giftCertificateMapper.deleteAssociativeRecords(tags, certificateWithTags.getId());
       }
     }
   }
@@ -140,7 +141,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     return tags.stream().map(Tag::getName).collect(Collectors.toSet()).contains(tag.getName());
   }
 
-  private Set<Long> removeTagIdsAlreadyAddedToCertificate(Set<Long> tagIdSet, Long certificateId) {
+  private Set<Long> removeAlreadyAddedTagIds(Set<Long> tagIdSet, Long certificateId) {
     tagIdSet.removeAll(tagMapper.selectTagIdListByTagIdSetAndCertificateId(tagIdSet, certificateId));
     return tagIdSet;
   }
