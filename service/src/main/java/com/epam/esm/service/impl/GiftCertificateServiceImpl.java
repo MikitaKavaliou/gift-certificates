@@ -149,13 +149,28 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   @Override
   public List<GiftCertificateWithTagsDto> findByCriteria(Map<String, String> parameters) {
     List<GiftCertificate> certificates =
-        giftCertificateMapper.findByCriteria(getTagList(parameters), parameters,
+        giftCertificateMapper.findByCriteria(getTagList(parameters), getParametersWithCorrectPriceValues(parameters),
             PaginationUtil.createRowBounds(parameters));
     return findTagsForGiftCertificates(certificates);
   }
 
   private List<String> getTagList(Map<String, String> parameters) {
     return parameters.containsKey("tag") ? Arrays.asList(parameters.get("tag").split(" ")) : null;
+  }
+
+  private Map<String, String> getParametersWithCorrectPriceValues(Map<String, String> parameters) {
+    parameters.put("minPrice", getCorrectPriceValue(parameters.get("minPrice")));
+    parameters.put("maxPrice", getCorrectPriceValue(parameters.get("maxPrice")));
+    return parameters;
+  }
+
+  private String getCorrectPriceValue(String priceValue) {
+    try {
+      Integer.parseInt(priceValue);
+      return priceValue;
+    } catch (NumberFormatException e) {
+      return null;
+    }
   }
 
   private List<GiftCertificateWithTagsDto> findTagsForGiftCertificates(List<GiftCertificate> giftCertificates) {
