@@ -3,16 +3,12 @@ plugins {
     id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
 }
 dependencies {
-    implementation project(":service")
-    implementation project(":repository")
+    api project(":service")
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude module: "spring-boot-starter-tomcat"
     }
     implementation "org.springframework.boot:spring-boot-starter-jetty"
-    implementation "org.springframework.boot:spring-boot-starter-aop"
-    implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "com.auth0:java-jwt:${jwtVersion}"
-    implementation "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
     implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
     testImplementation("io.rest-assured:spring-mock-mvc:${springMockMvcVersion}") {
         exclude module: "jaxb-osgi"

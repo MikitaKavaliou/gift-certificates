@@ -3,13 +3,10 @@ plugins {
     id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
 }
 dependencies {
-    implementation project(":repository")
-    implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisStarterVersion}"
-    implementation "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-aop"
+    api project(":repository")
+    api "org.springframework.boot:spring-boot-starter-aop"
+    api "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-json"
-    implementation "org.springframework.boot:spring-boot-starter-jdbc"
-    implementation "org.springframework.boot:spring-boot-starter-security"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 bootJar {

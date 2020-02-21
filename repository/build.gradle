@@ -3,10 +3,9 @@ plugins {
     id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
 }
 dependencies {
-    implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisStarterVersion}"
-    implementation "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
+    api "org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisStarterVersion}"
+    api "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
     runtimeOnly "mysql:mysql-connector-java"
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 bootJar {
     enabled false
