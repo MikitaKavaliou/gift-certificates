@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "giftCertificatesWithTags": {
+    "data": {
       "type": "array",
       "items": [
         {
@@ -80,6 +80,6 @@
     }
   },
   "required": [
-    "giftCertificatesWithTags"
+    "data"
   ]
 }

@@ -68,7 +68,7 @@ public class TokenService {
         return true;
       }
       return false;
-    } catch (JWTVerificationException ex) {
+    } catch (JWTVerificationException | IllegalArgumentException ex) {
       return false;
     }
   }

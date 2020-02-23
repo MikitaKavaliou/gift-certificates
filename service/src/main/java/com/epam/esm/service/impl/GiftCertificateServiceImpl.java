@@ -103,14 +103,14 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
   private void updateCertificateTags(GiftCertificateWithTagsDto certificateWithTags, String tagAction) {
     List<Tag> tags = certificateWithTags.getTags();
-    if (tags != null && tags.isEmpty()
+    if (tags != null && !tags.isEmpty()
         && (tagAction.equalsIgnoreCase("add") || (tagAction.equalsIgnoreCase("delete")))) {
       Set<Long> tagIdList;
       if (tagAction.equalsIgnoreCase("add")
           && !(tagIdList =
           removeAlreadyAddedTagIds(createTagIdSetForReceivedTags(tags), certificateWithTags.getId())).isEmpty()) {
         giftCertificateMapper.insertAssociativeRecords(tagIdList, certificateWithTags.getId());
-      } else if (tagAction.equalsIgnoreCase("delete")) {
+      } else {
         giftCertificateMapper.deleteAssociativeRecords(tags, certificateWithTags.getId());
       }
     }

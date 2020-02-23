@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "tags": {
+    "data": {
       "type": "array",
       "items": [
         {
@@ -24,6 +24,6 @@
     }
   },
   "required": [
-    "tags"
+    "data"
   ]
 }

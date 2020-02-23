@@ -8,7 +8,7 @@ public class PaginationUtil {
   private static final String PAGE_NUMBER_PARAMETER = "page";
   private static final String RECORDS_PER_PAGE_PARAMETER = "perPage";
   private static final Integer DEFAULT_PAGE_NUMBER = 1;
-  private static final Integer DEFAULT_PER_PAGE_RECORDS = 5;
+  private static final Integer DEFAULT_PER_PAGE_RECORDS = 50;
 
   private PaginationUtil() {
 

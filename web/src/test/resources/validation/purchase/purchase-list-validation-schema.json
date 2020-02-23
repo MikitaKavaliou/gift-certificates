@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "purchases": {
+    "data": {
       "type": "array",
       "items": [
         {
@@ -36,6 +36,6 @@
     }
   },
   "required": [
-    "purchases"
+    "data"
   ]
 }
