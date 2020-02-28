@@ -1,10 +1,18 @@
+plugins {
+    id "org.springframework.boot" version "${springBootVersion}"
+    id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
+}
 dependencies {
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "org.springframework:spring-test:${springVersion}"
-    testImplementation "com.h2database:h2:${h2DatabaseVersion}"
-    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
-    implementation "mysql:mysql-connector-java:${mysqlConnectorVersion}"
-    implementation "org.springframework:spring-jdbc:${springVersion}"
+    api "org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisStarterVersion}"
+    api "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
+    runtimeOnly "mysql:mysql-connector-java"
+}
+bootJar {
+    enabled false
+}
+jar {
+    enabled true
+}
+test {
+    useJUnitPlatform()
 }

@@ -1,12 +1,19 @@
 plugins {
-    id 'war'
+    id "org.springframework.boot" version "${springBootVersion}"
+    id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
 }
 dependencies {
-    implementation "org.springframework:spring-webmvc:${springVersion}"
-    implementation "javax.servlet:javax.servlet-api:${servletApiVersion}"
-    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
-    implementation project(':service')
-    implementation project(':repository')
+    api project(":service")
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    implementation "org.springframework.boot:spring-boot-starter-jetty"
+    implementation "com.auth0:java-jwt:${jwtVersion}"
+    implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
+    testImplementation("io.rest-assured:spring-mock-mvc:${springMockMvcVersion}") {
+        exclude module: "jaxb-osgi"
+    }
+    testImplementation "io.rest-assured:json-schema-validator:${jsonSchemaValidatorVersion}"
+    testImplementation "com.sun.xml.bind:jaxb-osgi:${jaxbOsgiVersion}"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
 }

@@ -1,21 +1,25 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.entity.CertificateWithTags;
+import com.epam.esm.dto.GiftCertificateUpdateDto;
+import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
+import com.epam.esm.mapper.GiftCertificateMapper;
+import com.epam.esm.mapper.TagMapper;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Tag;
-import com.epam.esm.repository.GiftCertificateRepository;
-import com.epam.esm.repository.TagRepository;
-import com.epam.esm.repository.specification.impl.certificate.CertificateIdSpecification;
-import com.epam.esm.repository.specification.impl.certificate.CertificatesCriteriaSpecification;
-import com.epam.esm.repository.specification.impl.tag.TagCertificateIdSpecification;
-import com.epam.esm.repository.specification.impl.tag.TagNameSpecification;
 import com.epam.esm.service.GiftCertificateService;
-import java.util.ArrayList;
+import com.epam.esm.util.PaginationUtil;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,104 +29,163 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class GiftCertificateServiceImpl implements GiftCertificateService {
 
-  private GiftCertificateRepository certificateRepository;
-  private TagRepository tagRepository;
+  private final GiftCertificateMapper giftCertificateMapper;
+  private final TagMapper tagMapper;
 
   /**
    * Instantiates a new Gift certificate service.
    *
-   * @param certificateRepository the certificate repository
-   * @param tagRepository         the tag repository
+   * @param giftCertificateMapper the gift certificate mapper
+   * @param tagMapper             the tag mapper
    */
   @Autowired
-  public GiftCertificateServiceImpl(GiftCertificateRepository certificateRepository, TagRepository tagRepository) {
-    this.certificateRepository = certificateRepository;
-    this.tagRepository = tagRepository;
+  public GiftCertificateServiceImpl(GiftCertificateMapper giftCertificateMapper, TagMapper tagMapper) {
+    this.giftCertificateMapper = giftCertificateMapper;
+    this.tagMapper = tagMapper;
   }
-
 
   @Override
-  public CertificateWithTags findById(Long id) {
-    GiftCertificate giftCertificate = findCertificate(id);
-    List<Tag> tags = tagRepository.query(new TagCertificateIdSpecification(id));
-    return new CertificateWithTags(giftCertificate, tags);
+  public GiftCertificateWithTagsDto findById(Long id) {
+    return doFindById(id, ExceptionType.RESOURCE_NOT_FOUND);
   }
 
-  private GiftCertificate findCertificate(Long id) {
-    List<GiftCertificate> certificates = certificateRepository.query(new CertificateIdSpecification(id));
-    if (certificates.isEmpty()) {
+  private GiftCertificateWithTagsDto doFindById(Long id, ExceptionType exceptionType) {
+    GiftCertificate giftCertificate = giftCertificateMapper.selectById(id)
+        .orElseThrow(() -> new ServerException(exceptionType));
+    List<Tag> tags = tagMapper.selectByCertificateId(id);
+    return new GiftCertificateWithTagsDto(giftCertificate, tags);
+  }
+
+  @Override
+  public int delete(Long id) {
+    return giftCertificateMapper.delete(id);
+  }
+
+  @Transactional
+  @Override
+  public GiftCertificateWithTagsDto create(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
+    Long certificateId = insertCertificate(giftCertificateWithTagsDto);
+    addTagsToCertificate(giftCertificateWithTagsDto, certificateId);
+    return doFindById(certificateId, ExceptionType.ERROR_CREATING_ENTITY);
+  }
+
+  private Long insertCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
+    GiftCertificate giftCertificate = giftCertificateWithTagsDto.getGiftCertificate();
+    giftCertificateMapper.insert(giftCertificate);
+    return giftCertificate.getId();
+  }
+
+  private void addTagsToCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto, Long giftCertificateId) {
+    List<Tag> tags = giftCertificateWithTagsDto.getTags();
+    if (tags != null && !tags.isEmpty()) {
+      giftCertificateMapper.insertAssociativeRecords(createTagIdSetForReceivedTags(tags), giftCertificateId);
+    }
+  }
+
+  @Transactional
+  @Override
+  public GiftCertificateWithTagsDto update(Long id, GiftCertificateUpdateDto giftCertificateUpdateDto) {
+    try {
+      updateCertificateFields(id, giftCertificateUpdateDto.getGiftCertificate());
+      updateCertificateTags(id, giftCertificateUpdateDto.getTagsForAdding(),
+          giftCertificateUpdateDto.getTagsForDeletion());
+      return doFindById(id, ExceptionType.RESOURCE_NOT_FOUND);
+    } catch (DataIntegrityViolationException e) {
       throw new ServerException(ExceptionType.RESOURCE_NOT_FOUND);
     }
-    return certificates.get(0);
+  }
+
+  private void updateCertificateFields(Long id, GiftCertificate giftCertificate) {
+    giftCertificate.setId(id);
+    if (hasFieldsForUpdate(giftCertificate)) {
+      giftCertificateMapper.update(giftCertificate);
+    }
+  }
+
+  private void updateCertificateTags(Long id, List<Tag> tagsForAdding, List<Tag> tagsForDeletion) {
+    Set<Long> tagIdSet;
+    if (tagsForAdding != null && !tagsForDeletion.isEmpty() &&
+        !(tagIdSet = removeAlreadyAddedTagIds(createTagIdSetForReceivedTags(tagsForAdding), id)).isEmpty()) {
+      giftCertificateMapper.insertAssociativeRecords(tagIdSet, id);
+    }
+    if (tagsForDeletion != null && !tagsForDeletion.isEmpty()) {
+      giftCertificateMapper.deleteAssociativeRecords(tagsForDeletion, id);
+    }
+  }
+
+  private boolean hasFieldsForUpdate(GiftCertificate giftCertificate) {
+    return giftCertificate.getName() != null || giftCertificate.getDescription() != null ||
+        giftCertificate.getPrice() != null || giftCertificate.getDuration() != null;
+  }
+
+  private Set<Long> createTagIdSetForReceivedTags(List<Tag> tags) {
+    Set<Tag> existingTags =
+        new HashSet<>(tagMapper.selectByNames(tags.stream().map(Tag::getName).collect(Collectors.toList())));
+    Set<Tag> newTags =
+        createNewTags(tags.stream().filter(t -> !containsTagWithTagName(existingTags, t)).collect(Collectors.toSet()));
+    return Stream.concat(existingTags.stream().map(Tag::getId), newTags.stream().map(Tag::getId))
+        .collect(Collectors.toSet());
+  }
+
+  private Set<Tag> createNewTags(Set<Tag> tags) {
+    if (!tags.isEmpty()) {
+      tagMapper.insertSet(tags);
+    }
+    return tags;
+  }
+
+  private boolean containsTagWithTagName(Set<Tag> tags, Tag tag) {
+    return tags.stream().map(Tag::getName).collect(Collectors.toSet()).contains(tag.getName());
+  }
+
+  private Set<Long> removeAlreadyAddedTagIds(Set<Long> tagIdSet, Long certificateId) {
+    tagIdSet.removeAll(tagMapper.selectTagIdListByTagIdSetAndCertificateId(tagIdSet, certificateId));
+    return tagIdSet;
   }
 
   @Override
-  public void delete(Long id) {
-    certificateRepository.delete(id);
+  public List<GiftCertificateWithTagsDto> findByCriteria(Map<String, String> parameters) {
+    List<GiftCertificate> certificates =
+        giftCertificateMapper.findByCriteria(getTagList(parameters), getParametersWithCorrectPriceValues(parameters),
+            PaginationUtil.createRowBounds(parameters));
+    return findTagsForGiftCertificates(certificates);
   }
 
-  @Transactional
-  @Override
-  public Long create(CertificateWithTags certificateWithTags) {
-    GiftCertificate certificate = certificateWithTags.getGiftCertificate();
-    List<Tag> tags = certificateWithTags.getTags();
-    long certificateId;
-    if (tags != null) {
-      List<Long> listOfTagsIdForCreation = getTagIdList(tags);
-      certificateId = certificateRepository.create(certificate, listOfTagsIdForCreation);
-    } else {
-      certificateId = certificateRepository.create(certificate);
-    }
-    return certificateId;
+  private List<String> getTagList(Map<String, String> parameters) {
+    return parameters.containsKey("tag") ? Arrays.asList(parameters.get("tag").split(" ")) : null;
   }
 
-  @Transactional
-  @Override
-  public Long update(CertificateWithTags certificateWithTags) {
-    GiftCertificate certificate = certificateWithTags.getGiftCertificate();
-    List<Tag> tags = certificateWithTags.getTags();
-    long certificateId;
-    if (tags != null) {
-      List<Long> listOfTagsIdForUpdate = getTagIdList(tags);
-      certificateId = certificateRepository.update(certificate, listOfTagsIdForUpdate);
-    } else {
-      certificateId = certificateRepository.update(certificate);
+  private Map<String, String> getParametersWithCorrectPriceValues(Map<String, String> parameters) {
+    parameters.put("minPrice", getCorrectPriceValue(parameters.get("minPrice")));
+    parameters.put("maxPrice", getCorrectPriceValue(parameters.get("maxPrice")));
+    return parameters;
+  }
+
+  private String getCorrectPriceValue(String priceValue) {
+    try {
+      Integer.parseInt(priceValue);
+      return priceValue;
+    } catch (NumberFormatException e) {
+      return null;
     }
-    return certificateId;
+  }
+
+  private List<GiftCertificateWithTagsDto> findTagsForGiftCertificates(List<GiftCertificate> giftCertificates) {
+    return giftCertificates.stream()
+        .map(g -> new GiftCertificateWithTagsDto(g, tagMapper.selectByCertificateId(g.getId())))
+        .collect(Collectors.toList());
   }
 
   @Override
-  public List<CertificateWithTags> findCertificatesWithTags(Map<String, String> parameters) {
-    List<GiftCertificate> certificates = certificateRepository.query(new CertificatesCriteriaSpecification(parameters));
-    List<CertificateWithTags> certificateTags = new ArrayList<>();
-    for (GiftCertificate certificate : certificates) {
-      List<Tag> tags = tagRepository.query(new TagCertificateIdSpecification(certificate.getId()));
-      certificateTags.add(new CertificateWithTags(certificate, tags));
-    }
-    return certificateTags;
+  public List<GiftCertificateWithTagsDto> findByUserId(Long userId, Map<String, String> parameters) {
+    List<GiftCertificate> certificates = giftCertificateMapper.selectByUserId(userId,
+        PaginationUtil.createRowBounds(parameters));
+    return findTagsForGiftCertificates(certificates);
   }
 
-  private List<Long> getTagIdList(List<Tag> tags) {
-    List<Long> tagIdList = new ArrayList<>();
-    for (Tag tag : tags) {
-      searchTagsByName(tag, tagIdList);
-    }
-    return tagIdList;
-  }
-
-  private void searchTagsByName(Tag tag, List<Long> tagIdList) {
-    List<Tag> foundTags = tagRepository.query(new TagNameSpecification(tag.getName()));
-    if (!foundTags.isEmpty()) {
-      addFountTagIdInList(foundTags, tagIdList);
-    } else {
-      long tagId = tagRepository.create(tag);
-      tagIdList.add(tagId);
-    }
-  }
-
-  private void addFountTagIdInList(List<Tag> foundTags, List<Long> tagIdList) {
-    for (Tag foundTag : foundTags) {
-      tagIdList.add(foundTag.getId());
-    }
+  @Override
+  public GiftCertificateWithTagsDto updatePrice(Long id, BigDecimal price) {
+    giftCertificateMapper.updatePrice(id, price);
+    return doFindById(id, ExceptionType.RESOURCE_NOT_FOUND);
   }
 }

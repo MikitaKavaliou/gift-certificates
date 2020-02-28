@@ -2,14 +2,14 @@ package com.epam.esm.service.impl;
 
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
+import com.epam.esm.mapper.TagMapper;
 import com.epam.esm.model.Tag;
-import com.epam.esm.repository.TagRepository;
-import com.epam.esm.repository.specification.impl.tag.AllTagsSpecification;
-import com.epam.esm.repository.specification.impl.tag.TagIdSpecification;
-import com.epam.esm.repository.specification.impl.tag.TagNameSpecification;
 import com.epam.esm.service.TagService;
+import com.epam.esm.util.PaginationUtil;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,40 +18,45 @@ import org.springframework.stereotype.Service;
 @Service
 public class TagServiceImpl implements TagService {
 
-  private TagRepository tagRepository;
+  private final TagMapper tagMapper;
 
   /**
    * Instantiates a new Tag service.
    *
-   * @param tagRepository the tag repository
+   * @param tagMapper mapper
    */
   @Autowired
-  public TagServiceImpl(TagRepository tagRepository) {
-    this.tagRepository = tagRepository;
+  public TagServiceImpl(TagMapper tagMapper) {
+    this.tagMapper = tagMapper;
   }
 
   @Override
-  public Long create(Tag tag) {
-    List<Tag> tags = tagRepository.query(new TagNameSpecification(tag.getName()));
-    return tags.isEmpty() ? tagRepository.create(tag) : tags.get(0).getId();
+  public Tag create(Tag tag) {
+    try {
+      tagMapper.insert(tag);
+      return tag;
+    } catch (DataIntegrityViolationException e) {
+      throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
+    }
   }
 
   @Override
   public Tag findById(Long id) {
-    List<Tag> tags = tagRepository.query(new TagIdSpecification(id));
-    if (tags.isEmpty()) {
-      throw new ServerException(ExceptionType.RESOURCE_NOT_FOUND);
-    }
-    return tags.get(0);
+    return tagMapper.selectById(id).orElseThrow(() -> new ServerException(ExceptionType.RESOURCE_NOT_FOUND));
   }
 
   @Override
-  public List<Tag> findAll() {
-    return tagRepository.query(new AllTagsSpecification());
+  public List<Tag> findAll(Map<String, String> parameters) {
+    return tagMapper.selectAll(PaginationUtil.createRowBounds(parameters));
   }
 
   @Override
-  public void delete(Long id) {
-    tagRepository.delete(id);
+  public Tag findTheMostPopularTagOfHighestSpendingUser() {
+    return tagMapper.selectMostPopularTagOfHighestSpendingUser();
+  }
+
+  @Override
+  public int delete(Long id) {
+    return tagMapper.deleteById(id);
   }
 }

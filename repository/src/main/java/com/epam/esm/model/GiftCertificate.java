@@ -1,7 +1,7 @@
 package com.epam.esm.model;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 
@@ -11,15 +11,22 @@ public class GiftCertificate {
   private String name;
   private String description;
   private BigDecimal price;
-  private ZonedDateTime createDate;
-  private ZonedDateTime lastUpdateDate;
+  private LocalDateTime createDate;
+  private LocalDateTime lastUpdateDate;
   private Integer duration;
 
   public GiftCertificate() {
   }
 
-  public GiftCertificate(Long id, String name, String description, BigDecimal price, ZonedDateTime createDate,
-      ZonedDateTime lastUpdateDate, Integer duration) {
+  public GiftCertificate(String name, String description, BigDecimal price, Integer duration) {
+    this.name = name;
+    this.description = description;
+    this.price = price;
+    this.duration = duration;
+  }
+
+  public GiftCertificate(Long id, String name, String description, BigDecimal price, LocalDateTime createDate,
+      LocalDateTime lastUpdateDate, Integer duration) {
     this.id = id;
     this.name = name;
     this.description = description;
@@ -27,10 +34,6 @@ public class GiftCertificate {
     this.createDate = createDate;
     this.lastUpdateDate = lastUpdateDate;
     this.duration = duration;
-  }
-
-  public static Builder builder() {
-    return new Builder();
   }
 
   public Long getId() {
@@ -65,19 +68,19 @@ public class GiftCertificate {
     this.price = price;
   }
 
-  public ZonedDateTime getCreateDate() {
+  public LocalDateTime getCreateDate() {
     return createDate;
   }
 
-  public void setCreateDate(ZonedDateTime createDate) {
+  public void setCreateDate(LocalDateTime createDate) {
     this.createDate = createDate;
   }
 
-  public ZonedDateTime getLastUpdateDate() {
+  public LocalDateTime getLastUpdateDate() {
     return lastUpdateDate;
   }
 
-  public void setLastUpdateDate(ZonedDateTime lastUpdateDate) {
+  public void setLastUpdateDate(LocalDateTime lastUpdateDate) {
     this.lastUpdateDate = lastUpdateDate;
   }
 
@@ -123,58 +126,5 @@ public class GiftCertificate {
         ", lastUpdateDate=" + lastUpdateDate +
         ", duration=" + duration +
         '}';
-  }
-
-  public static class Builder {
-
-    private Long id;
-    private String name;
-    private String description;
-    private BigDecimal price;
-    private ZonedDateTime createDate;
-    private ZonedDateTime lastUpdateDate;
-    private Integer duration;
-
-    private Builder() {
-    }
-
-    public Builder id(Long id) {
-      this.id = id;
-      return this;
-    }
-
-    public Builder name(String name) {
-      this.name = name;
-      return this;
-    }
-
-    public Builder description(String description) {
-      this.description = description;
-      return this;
-    }
-
-    public Builder price(BigDecimal price) {
-      this.price = price;
-      return this;
-    }
-
-    public Builder createDate(ZonedDateTime createDate) {
-      this.createDate = createDate;
-      return this;
-    }
-
-    public Builder lastUpdateDate(ZonedDateTime lastUpdateDate) {
-      this.lastUpdateDate = lastUpdateDate;
-      return this;
-    }
-
-    public Builder duration(Integer duration) {
-      this.duration = duration;
-      return this;
-    }
-
-    public GiftCertificate build() {
-      return new GiftCertificate(id, name, description, price, createDate, lastUpdateDate, duration);
-    }
   }
 }
