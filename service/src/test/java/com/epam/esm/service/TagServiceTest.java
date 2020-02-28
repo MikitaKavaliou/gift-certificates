@@ -1,83 +1,84 @@
 package com.epam.esm.service;
 
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.epam.esm.exception.ServerException;
+import com.epam.esm.mapper.TagMapper;
 import com.epam.esm.model.Tag;
-import com.epam.esm.repository.TagRepository;
-import com.epam.esm.repository.specification.impl.tag.AllTagsSpecification;
-import com.epam.esm.repository.specification.impl.tag.TagIdSpecification;
-import com.epam.esm.repository.specification.impl.tag.TagNameSpecification;
 import com.epam.esm.service.impl.TagServiceImpl;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TagServiceTest {
 
+  private static Tag tag;
   @Mock
-  private TagRepository tagRepository;
+  private TagMapper tagMapper;
   @InjectMocks
   private TagServiceImpl tagService;
 
+  @BeforeClass
+  public static void beforeClass() {
+    tag = new Tag(1L, "1");
+  }
+
   @Test
-  public void findByIdFoundCorrectTag() {
-    Tag expected = new Tag(1L, "1");
-    List<Tag> tags = Collections.singletonList(expected);
-    Mockito.when(tagRepository.query(Mockito.any(TagIdSpecification.class))).thenReturn(tags);
-    Tag actual = tagService.findById(1L);
-    Assert.assertEquals(expected, actual);
+  public void createTestInsertNewTagReturnsNewTag() {
+    Tag actual = tagService.create(tag);
+    Assert.assertEquals(tag, actual);
   }
 
   @Test(expected = ServerException.class)
-  public void findByIdThrowsException() {
-    List<Tag> tags = new ArrayList<>();
-    Mockito.when(tagRepository.query(Mockito.any(TagIdSpecification.class))).thenReturn(tags);
+  public void createTestInsertNewTagThrowsException() {
+    doThrow(DataIntegrityViolationException.class).when(tagMapper).insert(any());
+    tagService.create(tag);
+  }
+
+  @Test
+  public void findByIdTestFoundCorrectTag() {
+    when(tagMapper.selectById(any())).thenReturn(Optional.of(tag));
+    Tag actual = tagService.findById(1L);
+    Assert.assertEquals(tag, actual);
+  }
+
+  @Test(expected = ServerException.class)
+  public void findByIdTestNotFoundThrowsException() {
+    when(tagMapper.selectById(any())).thenReturn(Optional.empty());
     tagService.findById(1L);
   }
 
   @Test
-  public void findAllFoundCorrectTagList() {
-    Tag firstTag = new Tag(1L, "1");
-    Tag secondTag = new Tag(2L, "2");
-    List<Tag> expected = Arrays.asList(firstTag, secondTag);
-    Mockito.when(tagRepository.query(Mockito.any(AllTagsSpecification.class))).thenReturn(expected);
-    List<Tag> actual = tagService.findAll();
-    Assert.assertEquals(expected, actual);
+  public void findAllTestCorrectFoundTags() {
+    List<Tag> expected = Collections.singletonList(tag);
+    when(tagMapper.selectAll(any())).thenReturn(expected);
+    Assert.assertEquals(expected, tagService.findAll(new HashMap<>()));
   }
 
   @Test
-  public void createCreatesNewTagAndReturningItsId() {
-    long expectedTagId = 1;
-    Tag tag = new Tag(expectedTagId, "1");
-    Mockito.when(tagRepository.query(Mockito.any(TagNameSpecification.class))).thenReturn(new ArrayList<>());
-    Mockito.when(tagRepository.create(tag)).thenReturn(expectedTagId);
-    long actualTagId = tagService.create(tag);
-    Assert.assertEquals(expectedTagId, actualTagId);
-  }
-
-  @Test
-  public void createCorrectReturnsExistingTagId() {
-    long expectedTagId = 1;
-    Tag tag = new Tag(expectedTagId, "1");
-    List<Tag> tagList = Collections.singletonList(tag);
-    Mockito.when(tagRepository.query(Mockito.any(TagNameSpecification.class))).thenReturn(tagList);
-    long actualTagId = tagService.create(tag);
-    Assert.assertEquals(expectedTagId, actualTagId);
+  public void findTheMostPopularTagOfHighestSpendingUserTestCorrectFoundTag() {
+    when(tagMapper.selectMostPopularTagOfHighestSpendingUser()).thenReturn(tag);
+    Assert.assertEquals(tag, tagService.findTheMostPopularTagOfHighestSpendingUser());
   }
 
   @Test
   public void deleteCorrectMethodCall() {
     long tagId = 1L;
     tagService.delete(tagId);
-    Mockito.verify(tagRepository).delete(1L);
+    verify(tagMapper).deleteById(tagId);
   }
 }

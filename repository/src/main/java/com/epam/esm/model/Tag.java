@@ -1,10 +1,13 @@
 package com.epam.esm.model;
 
 import java.util.Objects;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 
-@XmlRootElement(name = "tag")
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Tag {
 
   private Long id;
