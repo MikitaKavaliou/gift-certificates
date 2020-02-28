@@ -1,5 +1,6 @@
 package com.epam.esm.service.impl;
 
+import com.epam.esm.dto.GiftCertificateUpdateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
@@ -77,42 +78,38 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   private void addTagsToCertificate(GiftCertificateWithTagsDto giftCertificateWithTagsDto, Long giftCertificateId) {
     List<Tag> tags = giftCertificateWithTagsDto.getTags();
     if (tags != null && !tags.isEmpty()) {
-      giftCertificateMapper
-          .insertAssociativeRecords(createTagIdSetForReceivedTags(tags),
-              giftCertificateId);
+      giftCertificateMapper.insertAssociativeRecords(createTagIdSetForReceivedTags(tags), giftCertificateId);
     }
   }
 
   @Transactional
   @Override
-  public GiftCertificateWithTagsDto update(GiftCertificateWithTagsDto giftCertificateWithTagsDto, String tagAction) {
+  public GiftCertificateWithTagsDto update(Long id, GiftCertificateUpdateDto giftCertificateUpdateDto) {
     try {
-      updateCertificateFields(giftCertificateWithTagsDto.getGiftCertificate());
-      updateCertificateTags(giftCertificateWithTagsDto, tagAction);
-      return doFindById(giftCertificateWithTagsDto.getId(), ExceptionType.RESOURCE_NOT_FOUND);
+      updateCertificateFields(id, giftCertificateUpdateDto.getGiftCertificate());
+      updateCertificateTags(id, giftCertificateUpdateDto.getTagsForAdding(),
+          giftCertificateUpdateDto.getTagsForDeletion());
+      return doFindById(id, ExceptionType.RESOURCE_NOT_FOUND);
     } catch (DataIntegrityViolationException e) {
       throw new ServerException(ExceptionType.RESOURCE_NOT_FOUND);
     }
   }
 
-  private void updateCertificateFields(GiftCertificate giftCertificate) {
+  private void updateCertificateFields(Long id, GiftCertificate giftCertificate) {
+    giftCertificate.setId(id);
     if (hasFieldsForUpdate(giftCertificate)) {
       giftCertificateMapper.update(giftCertificate);
     }
   }
 
-  private void updateCertificateTags(GiftCertificateWithTagsDto certificateWithTags, String tagAction) {
-    List<Tag> tags = certificateWithTags.getTags();
-    if (tags != null && !tags.isEmpty()
-        && (tagAction.equalsIgnoreCase("add") || (tagAction.equalsIgnoreCase("delete")))) {
-      Set<Long> tagIdList;
-      if (tagAction.equalsIgnoreCase("add")
-          && !(tagIdList =
-          removeAlreadyAddedTagIds(createTagIdSetForReceivedTags(tags), certificateWithTags.getId())).isEmpty()) {
-        giftCertificateMapper.insertAssociativeRecords(tagIdList, certificateWithTags.getId());
-      } else {
-        giftCertificateMapper.deleteAssociativeRecords(tags, certificateWithTags.getId());
-      }
+  private void updateCertificateTags(Long id, List<Tag> tagsForAdding, List<Tag> tagsForDeletion) {
+    Set<Long> tagIdSet;
+    if (tagsForAdding != null && !tagsForDeletion.isEmpty() &&
+        !(tagIdSet = removeAlreadyAddedTagIds(createTagIdSetForReceivedTags(tagsForAdding), id)).isEmpty()) {
+      giftCertificateMapper.insertAssociativeRecords(tagIdSet, id);
+    }
+    if (tagsForDeletion != null && !tagsForDeletion.isEmpty()) {
+      giftCertificateMapper.deleteAssociativeRecords(tagsForDeletion, id);
     }
   }
 

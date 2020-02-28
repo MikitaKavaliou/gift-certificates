@@ -1,5 +1,6 @@
 package com.epam.esm.service;
 
+import com.epam.esm.dto.GiftCertificateUpdateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import java.math.BigDecimal;
 import java.util.List;
@@ -47,11 +48,11 @@ public interface GiftCertificateService {
   /**
    * Update certificate with passed tags, returns updated certificate with tags.
    *
-   * @param giftCertificateWithTagsDto the certificate with tags
-   * @param tagAction                  the tag action
+   * @param giftCertificateId        the gift certificate id
+   * @param giftCertificateUpdateDto the gift certificate update dto
    * @return updated certificate with tags
    */
-  GiftCertificateWithTagsDto update(GiftCertificateWithTagsDto giftCertificateWithTagsDto, String tagAction);
+  GiftCertificateWithTagsDto update(Long giftCertificateId, GiftCertificateUpdateDto giftCertificateUpdateDto);
 
   /**
    * Update price, returns updated gift certificate with tags .

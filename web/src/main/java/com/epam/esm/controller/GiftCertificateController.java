@@ -1,13 +1,14 @@
 package com.epam.esm.controller;
 
 import com.epam.esm.dto.GiftCertificatePriceDto;
+import com.epam.esm.dto.GiftCertificateUpdateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.dto.GiftCertificatesListDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.security.SecurityUserDetails;
 import com.epam.esm.service.GiftCertificateService;
-import com.epam.esm.validation.GiftCertificateWithTagsValidator;
+import com.epam.esm.validation.GiftCertificateValidator;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -55,7 +56,7 @@ public class GiftCertificateController {
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
   public ResponseEntity<GiftCertificateWithTagsDto> createCertificate(
       @RequestBody GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
-    if (!GiftCertificateWithTagsValidator.isValidGiftCertificateValuesForCreate(giftCertificateWithTagsDto)) {
+    if (!GiftCertificateValidator.isValidGiftCertificateValuesForCreate(giftCertificateWithTagsDto)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
     return ResponseEntity
@@ -124,20 +125,18 @@ public class GiftCertificateController {
   /**
    * Update certificate with tags returns service response.
    *
-   * @param id                         the id of updating resource
-   * @param giftCertificateWithTagsDto the certificate with tags
-   * @param tagAction                  the tag action
+   * @param id                       the id of updating resource
+   * @param giftCertificateUpdateDto the gift certificate update dto
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
   @PatchMapping(value = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
   public ResponseEntity<GiftCertificateWithTagsDto> updateCertificate(@PathVariable Long id,
-      @RequestBody GiftCertificateWithTagsDto giftCertificateWithTagsDto, @RequestParam String tagAction) {
-    if (!GiftCertificateWithTagsValidator.isValidGiftCertificateValuesForUpdate(giftCertificateWithTagsDto)) {
+      @RequestBody GiftCertificateUpdateDto giftCertificateUpdateDto) {
+    if (!GiftCertificateValidator.isValidGiftCertificateValuesForUpdate(giftCertificateUpdateDto)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
-    giftCertificateWithTagsDto.setId(id);
-    return ResponseEntity.status(HttpStatus.OK).body(certificateService.update(giftCertificateWithTagsDto, tagAction));
+    return ResponseEntity.status(HttpStatus.OK).body(certificateService.update(id, giftCertificateUpdateDto));
   }
 
   /**
@@ -152,7 +151,7 @@ public class GiftCertificateController {
       MediaType.APPLICATION_XML_VALUE})
   public ResponseEntity<GiftCertificateWithTagsDto> updatePrice(@PathVariable Long id,
       @RequestBody GiftCertificatePriceDto price) {
-    if (price.getPrice() == null || !GiftCertificateWithTagsValidator.isValidCertificatePrice(price.getPrice())) {
+    if (price.getPrice() == null || !GiftCertificateValidator.isValidCertificatePrice(price.getPrice())) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
     return ResponseEntity.status(HttpStatus.OK.value()).body(certificateService.updatePrice(id, price.getPrice()));

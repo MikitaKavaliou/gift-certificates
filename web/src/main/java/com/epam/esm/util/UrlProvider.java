@@ -7,7 +7,7 @@ public class UrlProvider {
 
   private static final String PURCHASES_REGEX = "purchases";
   private static final String CERTIFICATES_ID_CONTEXT_PATH = "certificates/";
-  private static final String PURCHASES_BY_USER_ID_REGEX = "(purchases[/])\\d*";
+  private static final String PURCHASES_BY_USER_ID_REGEX = "(purchases).*";
 
   private UrlProvider() {
 

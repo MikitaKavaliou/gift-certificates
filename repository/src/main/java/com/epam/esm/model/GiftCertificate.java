@@ -18,6 +18,13 @@ public class GiftCertificate {
   public GiftCertificate() {
   }
 
+  public GiftCertificate(String name, String description, BigDecimal price, Integer duration) {
+    this.name = name;
+    this.description = description;
+    this.price = price;
+    this.duration = duration;
+  }
+
   public GiftCertificate(Long id, String name, String description, BigDecimal price, LocalDateTime createDate,
       LocalDateTime lastUpdateDate, Integer duration) {
     this.id = id;

@@ -1,19 +1,21 @@
 package com.epam.esm.validation;
 
+import com.epam.esm.dto.GiftCertificateUpdateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.model.Tag;
 import java.math.BigDecimal;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
-public class GiftCertificateWithTagsValidator {
+public class GiftCertificateValidator {
 
   private static final int MAX_CERTIFICATE_NAME_LENGTH = 50;
   private static final int MAX_CERTIFICATE_DESCRIPTION_LENGTH = 200;
   private static final double MIN_CERTIFICATE_PRICE = 0;
+  private static final double MAX_CERTIFICATE_PRICE = 10000;
   private static final int MIN_CERTIFICATE_DURATION = 1;
 
-  private GiftCertificateWithTagsValidator() {
+  private GiftCertificateValidator() {
 
   }
 
@@ -26,12 +28,12 @@ public class GiftCertificateWithTagsValidator {
         && isValidTagList(certificate.getTags());
   }
 
-  public static boolean isValidGiftCertificateValuesForUpdate(GiftCertificateWithTagsDto certificate) {
+  public static boolean isValidGiftCertificateValuesForUpdate(GiftCertificateUpdateDto certificate) {
     return (certificate.getName() == null || isValidGiftCertificateName(certificate.getName())
         && (certificate.getDescription() == null || isValidGiftCertificateDescription(certificate.getDescription()))
         && (certificate.getPrice() == null || isValidCertificatePrice(certificate.getPrice()))
         && (certificate.getDuration() == null || isValidCertificateDuration(certificate.getDuration()))
-        && isValidTagList(certificate.getTags()));
+        && isValidTagList(certificate.getTagsForAdding()) && isValidTagList(certificate.getTagsForDeletion()));
   }
 
   public static boolean isValidGiftCertificateName(String name) {
@@ -43,7 +45,7 @@ public class GiftCertificateWithTagsValidator {
   }
 
   public static boolean isValidCertificatePrice(BigDecimal price) {
-    return price.doubleValue() >= MIN_CERTIFICATE_PRICE;
+    return price.doubleValue() >= MIN_CERTIFICATE_PRICE && price.doubleValue() <= MAX_CERTIFICATE_PRICE;
   }
 
   public static boolean isValidCertificateDuration(Integer duration) {

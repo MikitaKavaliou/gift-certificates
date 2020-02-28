@@ -10,6 +10,7 @@ import com.epam.esm.config.SecurityConfig;
 import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.config.WebConfig;
 import com.epam.esm.dto.GiftCertificatePriceDto;
+import com.epam.esm.dto.GiftCertificateUpdateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Role;
@@ -60,6 +61,7 @@ public class GiftCertificateControllerTest {
   private TokenService tokenService;
   private JsonSchemaFactory jsonSchemaFactory;
   private GiftCertificateWithTagsDto giftCertificateWithTagsDto;
+  private GiftCertificateUpdateDto giftCertificateUpdateDto;
   private String adminToken;
   private String userToken;
 
@@ -77,6 +79,9 @@ public class GiftCertificateControllerTest {
     adminToken = tokenService.createToken(new User(8L, "username2", "password", Role.ADMIN)).getToken();
     userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER)).getToken();
     giftCertificateWithTagsDto = new GiftCertificateWithTagsDto(giftCertificate, Collections.singletonList(tag));
+    giftCertificateUpdateDto =
+        new GiftCertificateUpdateDto("name", "description", BigDecimal.valueOf(5), 2,
+            Collections.singletonList(tag), Collections.singletonList(tag));
     jsonSchemaFactory = JsonSchemaFactory
         .newBuilder().setValidationConfiguration(ValidationConfiguration
             .newBuilder().setDefaultVersion(SchemaVersion.DRAFTV4)
@@ -225,9 +230,9 @@ public class GiftCertificateControllerTest {
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .contentType(ContentType.JSON)
-        .body(objectMapper.writeValueAsString(giftCertificateWithTagsDto))
+        .body(objectMapper.writeValueAsString(giftCertificateUpdateDto))
         .when()
-        .patch(ALL_CERTIFICATES_ENDPOINT + "/47?tagAction=")
+        .patch(ALL_CERTIFICATES_ENDPOINT + "/47")
         .then()
         .statusCode(HttpStatus.OK.value())
         .assertThat()
@@ -237,13 +242,13 @@ public class GiftCertificateControllerTest {
   @Test
   public void updateCertificateIncorrectDataReturnsUpdatedObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
-    giftCertificateWithTagsDto.setPrice(BigDecimal.valueOf(-3));
+    giftCertificateUpdateDto.setPrice(BigDecimal.valueOf(-3));
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .contentType(ContentType.JSON)
-        .body(objectMapper.writeValueAsString(giftCertificateWithTagsDto))
+        .body(objectMapper.writeValueAsString(giftCertificateUpdateDto))
         .when()
-        .patch(ALL_CERTIFICATES_ENDPOINT + "/47?tagAction=")
+        .patch(ALL_CERTIFICATES_ENDPOINT + "/47")
         .then()
         .statusCode(HttpStatus.BAD_REQUEST.value())
         .assertThat()
@@ -256,9 +261,9 @@ public class GiftCertificateControllerTest {
     given()
         .header(AUTHORIZATION_HEADER_NAME, "someToken")
         .contentType(ContentType.JSON)
-        .body(objectMapper.writeValueAsString(giftCertificateWithTagsDto))
+        .body(objectMapper.writeValueAsString(giftCertificateUpdateDto))
         .when()
-        .patch(ALL_CERTIFICATES_ENDPOINT + "/47?tagAction=")
+        .patch(ALL_CERTIFICATES_ENDPOINT + "/47")
         .then()
         .statusCode(HttpStatus.UNAUTHORIZED.value())
         .assertThat()
@@ -271,9 +276,9 @@ public class GiftCertificateControllerTest {
     given()
         .header(AUTHORIZATION_HEADER_NAME, userToken)
         .contentType(ContentType.JSON)
-        .body(objectMapper.writeValueAsString(giftCertificateWithTagsDto))
+        .body(objectMapper.writeValueAsString(giftCertificateUpdateDto))
         .when()
-        .patch(ALL_CERTIFICATES_ENDPOINT + "/47?tagAction=")
+        .patch(ALL_CERTIFICATES_ENDPOINT + "/47")
         .then()
         .statusCode(HttpStatus.FORBIDDEN.value())
         .assertThat()
