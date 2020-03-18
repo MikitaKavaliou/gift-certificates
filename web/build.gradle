@@ -1,6 +1,8 @@
 plugins {
     id "org.springframework.boot" version "${springBootVersion}"
     id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
+    id "com.moowork.node" version "1.3.1"
+    id 'base'
 }
 dependencies {
     api project(":service")
@@ -17,3 +19,20 @@ dependencies {
     testImplementation "com.sun.xml.bind:jaxb-osgi:${jaxbOsgiVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
+
+task appNpmInstall(type: NpmTask) {
+    workingDir = file("${rootProject.projectDir}/admin-ui")
+    args = ["install"]
+}
+
+task appNpmRunBuild(type: NpmTask, dependsOn: appNpmInstall) {
+    workingDir = file("${rootProject.projectDir}/admin-ui")
+    args = ['run', 'build']
+}
+
+task copyWebApp(type: Copy, dependsOn: appNpmRunBuild) {
+    from "${rootProject.projectDir}/admin-ui/build"
+    into "${rootProject.projectDir}/web/build/resources/main/public/."
+}
+
+compileJava.dependsOn copyWebApp

@@ -1,14 +1,15 @@
 package com.epam.esm.controller;
 
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.dto.GiftCertificatePriceDto;
 import com.epam.esm.dto.GiftCertificateUpdateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
-import com.epam.esm.dto.GiftCertificatesListDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.security.SecurityUserDetails;
 import com.epam.esm.service.GiftCertificateService;
 import com.epam.esm.validation.GiftCertificateValidator;
+import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
  * The type Gift certificate controller. The class used for processing GiftCertificate-related requests.
  */
 @RestController
-@RequestMapping(value = "/certificates", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(value = "/certificates", produces = MediaType.APPLICATION_JSON_VALUE)
 public class GiftCertificateController {
 
   private final GiftCertificateService certificateService;
@@ -53,7 +54,7 @@ public class GiftCertificateController {
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
-  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GiftCertificateWithTagsDto> createCertificate(
       @RequestBody GiftCertificateWithTagsDto giftCertificateWithTagsDto) {
     if (!GiftCertificateValidator.isValidGiftCertificateValuesForCreate(giftCertificateWithTagsDto)) {
@@ -84,10 +85,10 @@ public class GiftCertificateController {
    * @return the service response
    */
   @GetMapping()
-  public ResponseEntity<GiftCertificatesListDto> findAllCertificates(
-      @RequestParam Map<String, String> parameters) {
+  public ResponseEntity<EntityListDto<GiftCertificateWithTagsDto>> findAllCertificates(
+      @RequestParam Map<String, String> parameters, @RequestParam(value = "tag", required = false) List<String> tags) {
     return ResponseEntity.status(HttpStatus.OK.value())
-        .body(new GiftCertificatesListDto(certificateService.findByCriteria(parameters)));
+        .body(certificateService.findByCriteria(parameters, tags));
   }
 
   /**
@@ -99,11 +100,11 @@ public class GiftCertificateController {
    */
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
   @GetMapping(params = "userCertificates")
-  public ResponseEntity<GiftCertificatesListDto> findUserCertificates(
+  public ResponseEntity<EntityListDto<GiftCertificateWithTagsDto>> findUserCertificates(
       @AuthenticationPrincipal SecurityUserDetails userDetails, @RequestParam Map<String, String> parameters) {
     return ResponseEntity
         .status(HttpStatus.OK.value())
-        .body(new GiftCertificatesListDto(certificateService.findByUserId(userDetails.getId(), parameters)));
+        .body(certificateService.findByUserId(userDetails.getId(), parameters));
   }
 
   /**
@@ -115,11 +116,11 @@ public class GiftCertificateController {
    */
   @Secured("ROLE_ADMIN")
   @GetMapping(params = "userId")
-  public ResponseEntity<GiftCertificatesListDto> findAnyUserCertificates(@RequestParam Long userId,
+  public ResponseEntity<EntityListDto<GiftCertificateWithTagsDto>> findAnyUserCertificates(@RequestParam Long userId,
       @RequestParam Map<String, String> parameters) {
     return ResponseEntity
         .status(HttpStatus.OK.value())
-        .body(new GiftCertificatesListDto(certificateService.findByUserId(userId, parameters)));
+        .body(certificateService.findByUserId(userId, parameters));
   }
 
   /**
@@ -130,7 +131,7 @@ public class GiftCertificateController {
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
-  @PatchMapping(value = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+  @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GiftCertificateWithTagsDto> updateCertificate(@PathVariable Long id,
       @RequestBody GiftCertificateUpdateDto giftCertificateUpdateDto) {
     if (!GiftCertificateValidator.isValidGiftCertificateValuesForUpdate(giftCertificateUpdateDto)) {
@@ -147,8 +148,7 @@ public class GiftCertificateController {
    * @return the response entity
    */
   @Secured("ROLE_ADMIN")
-  @PutMapping(value = "/{id}", params = "price", consumes = {MediaType.APPLICATION_JSON_VALUE,
-      MediaType.APPLICATION_XML_VALUE})
+  @PutMapping(value = "/{id}", params = "price", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GiftCertificateWithTagsDto> updatePrice(@PathVariable Long id,
       @RequestBody GiftCertificatePriceDto price) {
     if (price.getPrice() == null || !GiftCertificateValidator.isValidCertificatePrice(price.getPrice())) {

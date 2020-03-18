@@ -1,8 +1,8 @@
 package com.epam.esm.service;
 
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.dto.PurchaseWithCertificateDto;
 import com.epam.esm.model.Purchase;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,6 +27,6 @@ public interface PurchaseService {
    * @param parameters  the request parameters
    * @return the list if purchases with certificate dto
    */
-  List<PurchaseWithCertificateDto> findPurchasesByUserId(Long userId, String resourceUrl,
+  EntityListDto<PurchaseWithCertificateDto> findPurchasesByUserId(Long userId, String resourceUrl,
       Map<String, String> parameters);
 }

@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,8 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
  * The type Authentication controller.
  */
 @RestController
-@RequestMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}, consumes =
-    {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes =
+    MediaType.APPLICATION_JSON_VALUE)
 public class AuthenticationController {
 
   private final AuthenticationManager authenticationManager;
@@ -76,6 +77,17 @@ public class AuthenticationController {
     return ResponseEntity
         .status(HttpStatus.CREATED.value())
         .body(tokenService.createToken(userService.create(user)));
+  }
+
+  /**
+   * Validate admin token response entity.
+   *
+   * @return the response entity
+   */
+  @Secured("ROLE_ADMIN")
+  @GetMapping(value = "token", params = "admin")
+  public ResponseEntity<Void> validateAdminToken() {
+    return ResponseEntity.status(HttpStatus.OK).build();
   }
 
   /**

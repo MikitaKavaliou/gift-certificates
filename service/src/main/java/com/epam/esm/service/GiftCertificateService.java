@@ -1,5 +1,6 @@
 package com.epam.esm.service;
 
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.dto.GiftCertificateUpdateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import java.math.BigDecimal;
@@ -34,7 +35,7 @@ public interface GiftCertificateService {
    * @param requestCriteria the request criteria
    * @return the list of certificates with tags
    */
-  List<GiftCertificateWithTagsDto> findByCriteria(Map<String, String> requestCriteria);
+  EntityListDto<GiftCertificateWithTagsDto> findByCriteria(Map<String, String> requestCriteria, List<String> tags);
 
   /**
    * Find by user id, returns list of certificates with tags.
@@ -43,7 +44,7 @@ public interface GiftCertificateService {
    * @param parameters the parameters
    * @return the list of certificates with tags
    */
-  List<GiftCertificateWithTagsDto> findByUserId(Long userId, Map<String, String> parameters);
+  EntityListDto<GiftCertificateWithTagsDto> findByUserId(Long userId, Map<String, String> parameters);
 
   /**
    * Update certificate with passed tags, returns updated certificate with tags.

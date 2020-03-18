@@ -14,6 +14,7 @@ public class GiftCertificateValidator {
   private static final double MIN_CERTIFICATE_PRICE = 0;
   private static final double MAX_CERTIFICATE_PRICE = 10000;
   private static final int MIN_CERTIFICATE_DURATION = 1;
+  private static final int MAX_CERTIFICATE_DURATION = 10000;
 
   private GiftCertificateValidator() {
 
@@ -24,7 +25,7 @@ public class GiftCertificateValidator {
         && StringUtils.isNotBlank(certificate.getDescription())
         && isValidGiftCertificateDescription(certificate.getDescription())
         && certificate.getPrice() != null && isValidCertificatePrice(certificate.getPrice())
-        && certificate.getDuration() != null && isValidCertificateDuration(certificate.getDuration())
+        && (certificate.getDuration() == null || isValidCertificateDuration(certificate.getDuration()))
         && isValidTagList(certificate.getTags());
   }
 
@@ -49,7 +50,7 @@ public class GiftCertificateValidator {
   }
 
   public static boolean isValidCertificateDuration(Integer duration) {
-    return duration >= MIN_CERTIFICATE_DURATION;
+    return duration >= MIN_CERTIFICATE_DURATION && duration <= MAX_CERTIFICATE_DURATION;
   }
 
   public static boolean isValidTagList(List<Tag> tags) {

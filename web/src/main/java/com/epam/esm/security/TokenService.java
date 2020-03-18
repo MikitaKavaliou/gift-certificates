@@ -36,6 +36,7 @@ public class TokenService {
     algorithm = Algorithm.HMAC256(signature);
     jwtVerifier = JWT
         .require(algorithm)
+        .acceptExpiresAt(0)
         .withIssuer(tokenIssuer)
         .build();
   }

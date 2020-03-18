@@ -1,11 +1,5 @@
 package com.epam.esm.dto;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-
-@XmlRootElement(name = "serverError")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class ServerErrorDto {
 
   private int errorCode;

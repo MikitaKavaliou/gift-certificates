@@ -9,9 +9,9 @@ public class PaginationUtil {
   private static final String RECORDS_PER_PAGE_PARAMETER = "perPage";
   private static final Integer DEFAULT_PAGE_NUMBER = 1;
   private static final Integer MIN_PAGE_NUMBER = 1;
-  private static final Integer DEFAULT_PER_PAGE_RECORDS = 20;
+  private static final Integer DEFAULT_PER_PAGE_RECORDS = 10;
   private static final Integer MIN_PER_PAGE_RECORDS = 1;
-  private static final Integer MAX_PER_PAGE_RECORDS = 100;
+  private static final Integer MAX_PER_PAGE_RECORDS = 50;
 
 
   private PaginationUtil() {
@@ -33,5 +33,9 @@ public class PaginationUtil {
 
   private static RowBounds getDefaultRowBounds() {
     return new RowBounds(DEFAULT_PER_PAGE_RECORDS * (DEFAULT_PAGE_NUMBER - 1), DEFAULT_PER_PAGE_RECORDS);
+  }
+
+  public static Integer calculatePagesCount(int recordsCount, int pageSize) {
+    return (int) Math.ceil((double) recordsCount / pageSize);
   }
 }

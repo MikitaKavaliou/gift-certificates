@@ -1,5 +1,6 @@
 package com.epam.esm.service.impl;
 
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.dto.GiftCertificateUpdateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.exception.ExceptionType;
@@ -11,13 +12,13 @@ import com.epam.esm.model.Tag;
 import com.epam.esm.service.GiftCertificateService;
 import com.epam.esm.util.PaginationUtil;
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -104,12 +105,12 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
   private void updateCertificateTags(Long id, List<Tag> tagsForAdding, List<Tag> tagsForDeletion) {
     Set<Long> tagIdSet;
-    if (tagsForAdding != null && !tagsForDeletion.isEmpty() &&
-        !(tagIdSet = removeAlreadyAddedTagIds(createTagIdSetForReceivedTags(tagsForAdding), id)).isEmpty()) {
-      giftCertificateMapper.insertAssociativeRecords(tagIdSet, id);
-    }
     if (tagsForDeletion != null && !tagsForDeletion.isEmpty()) {
       giftCertificateMapper.deleteAssociativeRecords(tagsForDeletion, id);
+    }
+    if (tagsForAdding != null && !tagsForAdding.isEmpty() &&
+        !(tagIdSet = removeAlreadyAddedTagIds(createTagIdSetForReceivedTags(tagsForAdding), id)).isEmpty()) {
+      giftCertificateMapper.insertAssociativeRecords(tagIdSet, id);
     }
   }
 
@@ -144,28 +145,26 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   }
 
   @Override
-  public List<GiftCertificateWithTagsDto> findByCriteria(Map<String, String> parameters) {
+  public EntityListDto<GiftCertificateWithTagsDto> findByCriteria(Map<String, String> parameters, List<String> tags) {
+    RowBounds rowBounds = PaginationUtil.createRowBounds(parameters);
+    validatePriceValues(parameters);
     List<GiftCertificate> certificates =
-        giftCertificateMapper.findByCriteria(getTagList(parameters), getParametersWithCorrectPriceValues(parameters),
-            PaginationUtil.createRowBounds(parameters));
-    return findTagsForGiftCertificates(certificates);
+        giftCertificateMapper.findByCriteria(tags, parameters, rowBounds);
+    return new EntityListDto<>(findTagsForGiftCertificates(certificates),
+        PaginationUtil.calculatePagesCount(giftCertificateMapper.getCountOfSuitableRecordsOfFindByCriteria(tags,
+            parameters), rowBounds.getLimit()));
   }
 
-  private List<String> getTagList(Map<String, String> parameters) {
-    return parameters.containsKey("tag") ? Arrays.asList(parameters.get("tag").split(" ")) : null;
-  }
-
-  private Map<String, String> getParametersWithCorrectPriceValues(Map<String, String> parameters) {
+  private void validatePriceValues(Map<String, String> parameters) {
     parameters.put("minPrice", getCorrectPriceValue(parameters.get("minPrice")));
     parameters.put("maxPrice", getCorrectPriceValue(parameters.get("maxPrice")));
-    return parameters;
   }
 
   private String getCorrectPriceValue(String priceValue) {
     try {
-      Integer.parseInt(priceValue);
+      Double.parseDouble(priceValue);
       return priceValue;
-    } catch (NumberFormatException e) {
+    } catch (NumberFormatException | NullPointerException e) {
       return null;
     }
   }
@@ -177,10 +176,10 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
   }
 
   @Override
-  public List<GiftCertificateWithTagsDto> findByUserId(Long userId, Map<String, String> parameters) {
-    List<GiftCertificate> certificates = giftCertificateMapper.selectByUserId(userId,
-        PaginationUtil.createRowBounds(parameters));
-    return findTagsForGiftCertificates(certificates);
+  public EntityListDto<GiftCertificateWithTagsDto> findByUserId(Long userId, Map<String, String> parameters) {
+    List<GiftCertificate> certificates = giftCertificateMapper
+        .selectByUserId(userId, PaginationUtil.createRowBounds(parameters));
+    return new EntityListDto<>(findTagsForGiftCertificates(certificates));
   }
 
   @Override

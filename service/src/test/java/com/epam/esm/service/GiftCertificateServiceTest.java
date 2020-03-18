@@ -5,6 +5,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.dto.GiftCertificateUpdateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.exception.ServerException;
@@ -15,6 +16,7 @@ import com.epam.esm.model.Tag;
 import com.epam.esm.service.impl.GiftCertificateServiceImpl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -219,40 +221,52 @@ public class GiftCertificateServiceTest {
   @Test
   public void findByCriteriaTestWithTagNamesWithCorrectMaxPriceAndIncorrectMinPirce() {
     Map<String, String> parameters = new HashMap<>();
-    parameters.put("tag", "tag names");
+    List<String> tagList = Arrays.asList("tag", "names");
     parameters.put("name", "value");
     parameters.put("description", "description");
     parameters.put("maxPrice", "20");
     parameters.put("minPrice", "asf");
     when(certificateMapper.findByCriteria(any(), any(), any())).thenReturn(certificates);
+    when(certificateMapper.getCountOfSuitableRecordsOfFindByCriteria(any(), any())).thenReturn(1);
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
-    List<GiftCertificateWithTagsDto> actual = certificateService.findByCriteria(parameters);
-    List<GiftCertificateWithTagsDto> expected = Collections.singletonList(giftCertificateWithTags);
-    Assert.assertEquals(expected.size(), actual.size());
-    Assert.assertTrue(new ReflectionEquals(actual.get(0)).matches(expected.get(0)));
+    EntityListDto<GiftCertificateWithTagsDto> actual = certificateService.findByCriteria(parameters, tagList);
+    EntityListDto<GiftCertificateWithTagsDto> expected =
+        new EntityListDto<>(Collections.singletonList(giftCertificateWithTags), 1);
+    Assert.assertEquals(expected.getPagesCount(), actual.getPagesCount());
+    Assert.assertEquals(expected.getGiftCertificatesWithTags().size(), actual.getGiftCertificatesWithTags().size());
+    Assert.assertTrue(new ReflectionEquals(actual.getGiftCertificatesWithTags().get(0))
+        .matches(expected.getGiftCertificatesWithTags().get(0)));
+
   }
 
   @Test
   public void findByCriteriaTestWithoutTagNames() {
     Map<String, String> parameters = new HashMap<>();
+    List<String> tagList = Arrays.asList("tag", "names");
     parameters.put("name", "value");
     parameters.put("description", "description");
     when(certificateMapper.findByCriteria(any(), any(), any())).thenReturn(certificates);
+    when(certificateMapper.getCountOfSuitableRecordsOfFindByCriteria(any(), any())).thenReturn(1);
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
-    List<GiftCertificateWithTagsDto> actual = certificateService.findByCriteria(parameters);
-    List<GiftCertificateWithTagsDto> expected = Collections.singletonList(giftCertificateWithTags);
-    Assert.assertEquals(expected.size(), actual.size());
-    Assert.assertTrue(new ReflectionEquals(actual.get(0)).matches(expected.get(0)));
+    EntityListDto<GiftCertificateWithTagsDto> actual = certificateService.findByCriteria(parameters, tagList);
+    EntityListDto<GiftCertificateWithTagsDto> expected =
+        new EntityListDto<>(Collections.singletonList(giftCertificateWithTags), 1);
+    Assert.assertEquals(expected.getPagesCount(), actual.getPagesCount());
+    Assert.assertEquals(expected.getGiftCertificatesWithTags().size(), actual.getGiftCertificatesWithTags().size());
+    Assert.assertTrue(new ReflectionEquals(actual.getGiftCertificatesWithTags().get(0))
+        .matches(expected.getGiftCertificatesWithTags().get(0)));
   }
 
   @Test
   public void findByUserIdTestFoundCertificatesWithTags() {
     when(certificateMapper.selectByUserId(any(), any())).thenReturn(certificates);
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
-    List<GiftCertificateWithTagsDto> expected = Collections.singletonList(giftCertificateWithTags);
-    List<GiftCertificateWithTagsDto> actual = certificateService.findByUserId(1L, new HashMap<>());
-    Assert.assertEquals(expected.size(), actual.size());
-    Assert.assertTrue(new ReflectionEquals(actual.get(0)).matches(expected.get(0)));
+    EntityListDto<GiftCertificateWithTagsDto> expected =
+        new EntityListDto<>(Collections.singletonList(giftCertificateWithTags));
+    EntityListDto<GiftCertificateWithTagsDto> actual = certificateService.findByUserId(1L, new HashMap<>());
+    Assert.assertEquals(expected.getGiftCertificatesWithTags().size(), actual.getGiftCertificatesWithTags().size());
+    Assert.assertTrue(new ReflectionEquals(actual.getGiftCertificatesWithTags().get(0))
+        .matches(expected.getGiftCertificatesWithTags().get(0)));
   }
 
   @Test(expected = ServerException.class)

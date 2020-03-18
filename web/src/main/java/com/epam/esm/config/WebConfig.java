@@ -10,14 +10,12 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 @Configuration
-@EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
 
   @Override
@@ -26,7 +24,6 @@ public class WebConfig implements WebMvcConfigurer {
     builder.serializationInclusion(JsonInclude.Include.NON_NULL);
     builder.failOnUnknownProperties(true);
     converters.add(new MappingJackson2HttpMessageConverter(builder.build()));
-    converters.add(new Jaxb2RootElementHttpMessageConverter());
   }
 
   @Bean
@@ -42,5 +39,11 @@ public class WebConfig implements WebMvcConfigurer {
     messageSource.setBasename("classpath:locale/messages");
     messageSource.setDefaultEncoding("UTF-8");
     return messageSource;
+  }
+
+  @Override
+  public void addCorsMappings(CorsRegistry registry) {
+    registry.addMapping("/**")
+        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE");
   }
 }

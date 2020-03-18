@@ -4,7 +4,6 @@ plugins {
 }
 dependencies {
     api "org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisStarterVersion}"
-    api "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
     runtimeOnly "mysql:mysql-connector-java"
 }
 bootJar {

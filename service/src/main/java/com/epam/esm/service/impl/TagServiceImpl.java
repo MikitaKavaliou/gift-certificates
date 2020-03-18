@@ -1,12 +1,12 @@
 package com.epam.esm.service.impl;
 
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.mapper.TagMapper;
 import com.epam.esm.model.Tag;
 import com.epam.esm.service.TagService;
 import com.epam.esm.util.PaginationUtil;
-import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -46,8 +46,8 @@ public class TagServiceImpl implements TagService {
   }
 
   @Override
-  public List<Tag> findAll(Map<String, String> parameters) {
-    return tagMapper.selectAll(PaginationUtil.createRowBounds(parameters));
+  public EntityListDto<Tag> findAll(Map<String, String> parameters) {
+    return new EntityListDto<>(tagMapper.selectAll(PaginationUtil.createRowBounds(parameters)));
   }
 
   @Override

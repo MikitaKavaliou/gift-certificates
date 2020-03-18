@@ -1,7 +1,7 @@
 package com.epam.esm.controller;
 
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.dto.PurchaseGiftCertificateIdDto;
-import com.epam.esm.dto.PurchaseListDto;
 import com.epam.esm.dto.PurchaseWithCertificateDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
  * The type Purchase controller.
  */
 @RestController
-@RequestMapping(value = "/purchases", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(value = "/purchases", produces = MediaType.APPLICATION_JSON_VALUE)
 public class PurchaseController {
 
   private final PurchaseService purchaseService;
@@ -54,13 +54,13 @@ public class PurchaseController {
    */
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
   @GetMapping()
-  public ResponseEntity<PurchaseListDto> findAllPurchasesByUserId(
+  public ResponseEntity<EntityListDto<PurchaseWithCertificateDto>> findAllPurchasesByUserId(
       @AuthenticationPrincipal SecurityUserDetails userDetails,
       @RequestParam Map<String, String> parameters, HttpServletRequest request) {
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(new PurchaseListDto(purchaseService.findPurchasesByUserId(userDetails.getId(),
-            UrlProvider.getUrlForCertificateFromPurchasesUrl(request.getRequestURL().toString()), parameters)));
+        .body(purchaseService.findPurchasesByUserId(userDetails.getId(),
+            UrlProvider.getUrlForCertificateFromPurchasesUrl(request.getRequestURL().toString()), parameters));
   }
 
   /**
@@ -73,12 +73,12 @@ public class PurchaseController {
    */
   @Secured({"ROLE_ADMIN"})
   @GetMapping(params = "userId")
-  public ResponseEntity<PurchaseListDto> findAnyUserPurchases(@RequestParam Long userId,
+  public ResponseEntity<EntityListDto<PurchaseWithCertificateDto>> findAnyUserPurchases(@RequestParam Long userId,
       @RequestParam Map<String, String> parameters, HttpServletRequest request) {
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(new PurchaseListDto(purchaseService.findPurchasesByUserId(userId,
-            UrlProvider.getUrlForCertificateFromPurchasesByUserIdUrl(request.getRequestURL().toString()), parameters)));
+        .body(purchaseService.findPurchasesByUserId(userId,
+            UrlProvider.getUrlForCertificateFromPurchasesByUserIdUrl(request.getRequestURL().toString()), parameters));
   }
 
   /**
@@ -90,7 +90,7 @@ public class PurchaseController {
    * @return the response entity
    */
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
-  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<PurchaseWithCertificateDto> createPurchase(
       @AuthenticationPrincipal SecurityUserDetails userDetails,
       @RequestBody PurchaseGiftCertificateIdDto purchaseGiftCertificateId,
