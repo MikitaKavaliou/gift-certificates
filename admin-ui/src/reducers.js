@@ -1,8 +1,8 @@
 import {combineReducers} from "redux";
 import {
-  certificateList,
-  pagesCount,
-  status
+    certificateList,
+    pagesCount,
+    status
 } from "./app/certificates/duck/reducer"
 import {message, showStatus, token} from "./app/common/duck/reducer";
 

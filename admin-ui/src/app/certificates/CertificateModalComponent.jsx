@@ -161,11 +161,17 @@ export function CertificateModal({modalState, closeModal, certificate, token, up
         return items;
     })();
 
+    const isCertificateNotChanged = () => {
+        return (certificate ? certificate.name === nameInput && certificate.description === descriptionInput &&
+            certificate.price === parseFloat(priceInput) && certificate.duration === parseInt(durationInput) &&
+            JSON.stringify(certificate.tags) === JSON.stringify(tags) : true);
+    };
+
     const formValid = (() => nameInput?.length >= 5 && nameInput.length <= 30 &&
             descriptionInput?.length >= 12 && descriptionInput.length <= 1000 &&
             !isNaN(parseFloat(priceInput)) && parseFloat(priceInput) >= 0 &&
             !isNaN(parseInt(durationInput)) && parseInt(durationInput) >= 0 &&
-            tagInput === ""
+            tagInput === "" && !isCertificateNotChanged()
     )();
 
     const handleSubmit = async e => {

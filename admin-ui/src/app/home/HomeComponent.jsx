@@ -16,7 +16,8 @@ export function Home() {
                         <br/>
                         Proceed to login page.
                     </p>
-                    <input className="btn btn-dark" onClick={() => handleProceedLogin()} type="button" value="Proceed to login"/>
+                    <input className="btn btn-dark" onClick={() => handleProceedLogin()} type="button"
+                           value="Proceed to login"/>
                 </div>
             </div>
         </div>

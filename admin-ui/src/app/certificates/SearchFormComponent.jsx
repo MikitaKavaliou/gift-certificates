@@ -123,5 +123,4 @@ export function SearchForm({hideAlert}) {
             </div>
         </form>
     )
-
 }

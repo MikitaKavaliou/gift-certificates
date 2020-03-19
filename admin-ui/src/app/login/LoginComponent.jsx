@@ -44,7 +44,7 @@ export default function LoginComponent({fetchToken, logInUser, logOutUser, showA
             if (response.ok && (JWT(responseBody.token).role === "ADMIN")) {
                 logInUser(responseBody.token);
                 history.push("/certificates");
-            } else if (response.status === 401) {
+            } else if (response.status === 401 || (response.ok && (JWT(responseBody.token).role === "USER"))) {
                 setWasSubmittedIncorrectData(true);
             } else {
                 let responseBody = await response.json();

@@ -8,7 +8,6 @@ const mapStateToProps = state => {
         token: state.token,
     }
 };
-
 const mapDispatchToProps = dispatch => {
     return {
         updateCertificates() {
@@ -19,5 +18,4 @@ const mapDispatchToProps = dispatch => {
         },
     }
 };
-
 export default connect(mapStateToProps, mapDispatchToProps)(CertificateModal);
