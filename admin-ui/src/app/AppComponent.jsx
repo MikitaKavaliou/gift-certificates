@@ -13,7 +13,7 @@ export function App({token, alertShowStatus}) {
     const fetchToken = async () => {
         return token ?
             await fetch("https://localhost:8443/token?admin", {
-                method: "GET",
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + token,

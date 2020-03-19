@@ -38,6 +38,7 @@ public class AuthenticationControllerTest {
 
   private static final String LOGIN_ENDPOINT = "/login";
   private static final String SIGNUP_ENDPOINT = "/signup";
+  private static final String VALIDATE_ADMIN_TOKEN_ENDPOINT = "/token?admin";
   private static final String TOKEN_OBJECT_SCHEMA_NAME =
       "validation/token/token-object-validation-schema.json";
   private static final String EXCEPTION_OBJECT_SCHEMA_NAME =
@@ -52,6 +53,7 @@ public class AuthenticationControllerTest {
   private TokenService tokenService;
   private JsonSchemaFactory jsonSchemaFactory;
   private String userToken;
+  private String adminToken;
 
   @Before
   public void initializeRestAssuredMockMvcWebApplicationContext() {
@@ -61,6 +63,7 @@ public class AuthenticationControllerTest {
     RestAssuredMockMvc.mockMvc(mockMvc);
     MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilter(authenticationFilter);
     userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER)).getToken();
+    adminToken = tokenService.createToken(new User(2L, "username2", "password", Role.ADMIN)).getToken();
     jsonSchemaFactory = JsonSchemaFactory
         .newBuilder().setValidationConfiguration(ValidationConfiguration
             .newBuilder().setDefaultVersion(SchemaVersion.DRAFTV4)
@@ -195,5 +198,38 @@ public class AuthenticationControllerTest {
         .statusCode(HttpStatus.BAD_REQUEST.value())
         .assertThat()
         .body(matchesJsonSchemaInClasspath(EXCEPTION_OBJECT_SCHEMA_NAME).using(jsonSchemaFactory));
+  }
+
+  @Test
+  public void validateAdminTokenCorrectTokenTest() {
+    given()
+        .contentType(ContentType.JSON)
+        .header(AUTHORIZATION_HEADER_NAME, adminToken)
+        .when()
+        .post(VALIDATE_ADMIN_TOKEN_ENDPOINT)
+        .then()
+        .statusCode(HttpStatus.OK.value());
+  }
+
+  @Test
+  public void validateAdminTokenUserTokenForbiddenTest() {
+    given()
+        .contentType(ContentType.JSON)
+        .header(AUTHORIZATION_HEADER_NAME, userToken)
+        .when()
+        .post(VALIDATE_ADMIN_TOKEN_ENDPOINT)
+        .then()
+        .statusCode(HttpStatus.FORBIDDEN.value());
+  }
+
+  @Test
+  public void validateAdminTokenGuestUnauthorizedTest() {
+    given()
+        .contentType(ContentType.JSON)
+        .header(AUTHORIZATION_HEADER_NAME, "incorrect token")
+        .when()
+        .post(VALIDATE_ADMIN_TOKEN_ENDPOINT)
+        .then()
+        .statusCode(HttpStatus.UNAUTHORIZED.value());
   }
 }

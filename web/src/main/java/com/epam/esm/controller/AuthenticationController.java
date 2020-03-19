@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -85,7 +84,7 @@ public class AuthenticationController {
    * @return the response entity
    */
   @Secured("ROLE_ADMIN")
-  @GetMapping(value = "token", params = "admin")
+  @PostMapping(value = "token", params = "admin")
   public ResponseEntity<Void> validateAdminToken() {
     return ResponseEntity.status(HttpStatus.OK).build();
   }
@@ -95,7 +94,7 @@ public class AuthenticationController {
    *
    * @param user the user
    */
-  public void validateUser(User user) {
+  private void validateUser(User user) {
     if (!UserValidator.isValidUser(user)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
