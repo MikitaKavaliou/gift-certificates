@@ -3,7 +3,6 @@ import {App} from "./AppComponent";
 
 const mapStateToProps = state => {
     return {
-        token: state.token,
         alertShowStatus: state.alert.showStatus,
     }
 };

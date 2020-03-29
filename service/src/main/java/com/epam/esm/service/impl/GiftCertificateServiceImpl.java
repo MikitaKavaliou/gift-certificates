@@ -149,7 +149,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     RowBounds rowBounds = PaginationUtil.createRowBounds(parameters);
     validatePriceValues(parameters);
     List<GiftCertificate> certificates =
-        giftCertificateMapper.findByCriteria(tags, parameters, rowBounds);
+        giftCertificateMapper.selectByCriteria(tags, parameters, rowBounds);
     return new EntityListDto<>(findTagsForGiftCertificates(certificates),
         PaginationUtil.calculatePagesCount(giftCertificateMapper.getCountOfSuitableRecordsOfFindByCriteria(tags,
             parameters), rowBounds.getLimit()));

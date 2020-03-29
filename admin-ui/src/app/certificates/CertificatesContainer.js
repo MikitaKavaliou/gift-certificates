@@ -1,12 +1,12 @@
 import {connect} from 'react-redux'
 import {Certificates} from "./CertificatesComponent";
-import {fetchCertificates} from "./duck/operations";
-import {logOut, showAlert} from "../common/duck/operations";
+import {fetchCertificates} from "./redux/operations";
+import {validateToken} from "../common/redux/operations";
 
 const mapStateToProps = state => {
     return {
         certificates: state.certificates.certificateList,
-        certificateStatus: state.certificates.status
+        token: state.token
     }
 };
 const mapDispatchToProps = dispatch => {
@@ -14,12 +14,9 @@ const mapDispatchToProps = dispatch => {
         fetchCertificates(parameters) {
             dispatch(fetchCertificates(parameters));
         },
-        showAlert(message) {
-            dispatch(showAlert(message));
-        },
-        logOutUser() {
-            dispatch(logOut());
-        },
+        validateToken(token) {
+            dispatch(validateToken(token));
+        }
     }
 };
 

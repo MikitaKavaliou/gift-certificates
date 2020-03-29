@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  * The type Tag controller. The class used for processing Tag-related requests.
  */
 @RestController
-@RequestMapping(value = "/tags", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/tags", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TagController {
 
   private final TagService tagService;

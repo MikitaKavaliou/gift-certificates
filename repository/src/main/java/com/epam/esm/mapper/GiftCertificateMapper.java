@@ -129,7 +129,7 @@ public interface GiftCertificateMapper {
       @Result(property = "lastUpdateDate", column = "last_update_date"),
       @Result(property = "duration", column = "duration"),
   })
-  List<GiftCertificate> findByCriteria(List<String> tags, Map<String, String> parameters, RowBounds rowBounds);
+  List<GiftCertificate> selectByCriteria(List<String> tags, Map<String, String> parameters, RowBounds rowBounds);
 
   @Select({
       "<script>",

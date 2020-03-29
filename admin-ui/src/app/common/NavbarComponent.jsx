@@ -3,7 +3,7 @@ import {useHistory, useLocation} from "react-router-dom";
 import JWT from "jwt-decode"
 import CertificateModal from "../certificates/CertificateModalContainer";
 
-export function Navbar({logOutUser, token}) {
+export function Navbar({logOut, token}) {
     const [showCertificateModal, setShowCertificateModal] = useState(false);
     const username = token ? JWT(token).username : null;
     const history = useHistory();
@@ -18,7 +18,7 @@ export function Navbar({logOutUser, token}) {
     };
 
     const handleLogOutButton = () => {
-        logOutUser();
+        logOut();
         history.push("/login");
     };
     return (

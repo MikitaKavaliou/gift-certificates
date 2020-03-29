@@ -134,5 +134,3 @@ export function Pagination({pagesCount}) {
         </>
     )
 }
-
-

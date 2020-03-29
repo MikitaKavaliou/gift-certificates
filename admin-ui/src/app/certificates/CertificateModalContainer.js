@@ -1,5 +1,4 @@
-import {updateCertificatesStatus} from "./duck/operations";
-import {showAlert} from "../common/duck/operations";
+import {createCertificate, updateCertificate} from "./redux/operations";
 import {connect} from "react-redux";
 import {CertificateModal} from "./CertificateModalComponent";
 
@@ -10,12 +9,12 @@ const mapStateToProps = state => {
 };
 const mapDispatchToProps = dispatch => {
     return {
-        updateCertificates() {
-            dispatch(updateCertificatesStatus());
+        createCertificate(token, certificate, parameters) {
+            dispatch(createCertificate(token, certificate, parameters));
         },
-        showAlert(message) {
-            dispatch(showAlert(message))
-        },
+        updateCertificate(token, certificateId, certificate, parameters) {
+            dispatch(updateCertificate(token, certificateId, certificate, parameters))
+        }
     }
 };
 export default connect(mapStateToProps, mapDispatchToProps)(CertificateModal);

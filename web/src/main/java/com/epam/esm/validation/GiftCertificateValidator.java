@@ -9,11 +9,11 @@ import org.apache.commons.lang3.StringUtils;
 
 public class GiftCertificateValidator {
 
-  private static final int MAX_CERTIFICATE_NAME_LENGTH = 50;
-  private static final int MAX_CERTIFICATE_DESCRIPTION_LENGTH = 200;
+  private static final int MAX_CERTIFICATE_NAME_LENGTH = 30;
+  private static final int MAX_CERTIFICATE_DESCRIPTION_LENGTH = 1000;
   private static final double MIN_CERTIFICATE_PRICE = 0;
   private static final double MAX_CERTIFICATE_PRICE = 10000;
-  private static final int MIN_CERTIFICATE_DURATION = 1;
+  private static final int MIN_CERTIFICATE_DURATION = 0;
   private static final int MAX_CERTIFICATE_DURATION = 10000;
 
   private GiftCertificateValidator() {

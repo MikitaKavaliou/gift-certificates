@@ -1,4 +1,4 @@
-import {hideAlert} from "../common/duck/operations";
+import {hideAlert} from "../common/redux/operations";
 import {connect} from "react-redux";
 import {SearchForm} from "./SearchFormComponent";
 

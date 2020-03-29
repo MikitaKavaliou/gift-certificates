@@ -1,121 +1,78 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import {useHistory} from "react-router-dom";
-import * as JWT from "jwt-decode";
+import {Form, Formik, useField} from "formik";
+import * as Yup from "yup"
 
-export default function LoginComponent({fetchToken, logInUser, logOutUser, showAlert, hideAlert}) {
-    const [usernameInput, setUsername] = useState("");
-    const [passwordInput, setPassword] = useState("");
-    const [wasUsernameTouched, setWasUsernameTouched] = useState(false);
-    const [wasPasswordTouched, setWasPasswordTouched] = useState(false);
-    const [wasUsernameOnBlur, setWasUsernameOnBlur] = useState(false);
-    const [wasPasswordOnBlur, setWasPasswordOnBlur] = useState(false);
-    const [wasSubmittedIncorrectData, setWasSubmittedIncorrectData] = useState(false);
+export default function LoginComponent({token, loginFailure, validateToken, hideAlert, logIn}) {
     const history = useHistory();
 
     useEffect(() => {
-        (async () => {
-            try {
-                const response = await fetchToken();
-                if (response && response.ok) {
-                    history.push("/certificates");
-                } else {
-                    logOutUser();
-                }
-            } catch (e) {
-                showAlert("Server not responding.");
-            }
-        })();
-    }, [fetchToken, history, logOutUser, showAlert]);
-
-    const handleSubmit = async e => {
-        try {
-            e.preventDefault();
-            hideAlert();
-            const response = await fetch("https://localhost:8443/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                }, body: JSON.stringify({
-                    username: usernameInput,
-                    password: passwordInput
-                })
-            });
-            const responseBody = await response.json();
-            if (response.ok && (JWT(responseBody.token).role === "ADMIN")) {
-                logInUser(responseBody.token);
+        if (token) {
+            validateToken(token);
+            if (token) {
                 history.push("/certificates");
-            } else if (response.status === 401 || (response.ok && (JWT(responseBody.token).role === "USER"))) {
-                setWasSubmittedIncorrectData(true);
-            } else {
-                let responseBody = await response.json();
-                showAlert(responseBody.errorMessage);
             }
-        } catch (e) {
-            showAlert("Server not responding.");
         }
+    }, [history, token, validateToken]);
+
+    const handleSubmit = values => {
+        hideAlert();
+        logIn(values);
     };
 
-    const handleClick = e => {
-        setWasSubmittedIncorrectData(false);
-        e.target.name === "username" ? setWasUsernameTouched(true) : setWasPasswordTouched(true);
+    const Input = ({label, ...props}) => {
+        const [field, meta] = useField(props);
+        return (
+            <>
+                <input {...field} {...props} />
+                <div className="error">{meta.touched && meta.error}</div>
+            </>
+        );
     };
-
-    const handleChange = e => {
-        setWasSubmittedIncorrectData(false);
-        e.target.name === "username" ? setUsername(e.target.value) : setPassword(e.target.value);
-    };
-
-    const handleBlur = e => {
-        (e.target.name === "username") ? setWasUsernameOnBlur(true) : setWasPasswordOnBlur(true);
-    };
-
-    const formValid = (() => usernameInput?.length >= 3 && usernameInput.length <= 30 &&
-        passwordInput?.length >= 4 && usernameInput.length <= 40)();
 
     return (
         <main>
-            <form onSubmit={handleSubmit}>
-                <div className="login-container">
-                    <h1 className="login-header">LogIn</h1>
-                    <input
-                        type="text"
-                        placeholder="Username"
-                        name="username"
-                        onClick={handleClick}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                    />
-                    <div className="error">
-                        {wasUsernameTouched && wasUsernameOnBlur &&
-                        (usernameInput.length < 3 ?
-                            "Minimum 3 characters is required."
-                            : usernameInput.length >= 30
-                            && "Maximum length is 30 characters")
-                        }
-                    </div>
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        name="password"
-                        onClick={handleClick}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                    />
-                    <div className="error">
-                        {wasPasswordTouched && wasPasswordOnBlur &&
-                        (passwordInput.length < 4 ?
-                            "Minimum 4 characters is required." :
-                            passwordInput.length >= 30 && "Maximum length is 30 characters")
-                        }
-                    </div>
-                    <div className="error">
-                        <small>{wasSubmittedIncorrectData &&
-                        <div className="error">Wrong username or password</div>}</small>
-                    </div>
-                    <input className="btn btn-primary" disabled={!formValid}
-                           type="submit" value="Login"/>
-                </div>
-            </form>
+            <div className="login-container">
+                <h1 className="login-header">LogIn</h1>
+                <Formik
+                    initialValues={{username: '', password: ''}}
+                    validationSchema={Yup.object({
+                        username: Yup.string()
+                            .max(30, 'Your username is incorrect')
+                            .min(3, 'Your username is incorrect')
+                            .required('Your username is incorrect'),
+                        password: Yup.string()
+                            .max(30, 'Your password is incorrect')
+                            .min(4, 'Your password is incorrect')
+                            .required('Your username is incorrect'),
+                    })}
+                    onSubmit={(values) => handleSubmit(values)}
+                >
+                    {({
+                          isValid,
+                          dirty
+                      }) => (
+                        <Form>
+                            <Input
+                                name="username"
+                                type="text"
+                                placeholder="Username"
+                            />
+                            <Input
+                                name="password"
+                                type="password"
+                                placeholder="Password"
+                            />
+                            <div className="error">
+                                <small>{loginFailure &&
+                                <div className="error">Wrong username or password</div>}</small>
+                            </div>
+                            <input disabled={!(isValid && dirty)} className="btn btn-primary" type="submit"
+                                   value="Login"/>
+                        </Form>
+                    )}
+                </Formik>
+            </div>
         </main>
     )
 }

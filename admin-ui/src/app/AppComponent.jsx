@@ -8,19 +8,7 @@ import {PageNotFound} from "./common/PageNotFound";
 import Alert from "./common/AlertContainer";
 import {Home} from "./home/HomeComponent";
 
-export function App({token, alertShowStatus}) {
-
-    const fetchToken = async () => {
-        return token ?
-            await fetch("https://localhost:8443/token?admin", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token,
-                }
-            }) : false;
-    };
-
+export function App({alertShowStatus}) {
     return (
         <>
             <Router>
@@ -33,10 +21,10 @@ export function App({token, alertShowStatus}) {
                         <Home/>
                     </Route>
                     <Route exact path="/certificates">
-                        <Certificate fetchToken={fetchToken}/>
+                        <Certificate />
                     </Route>
                     <Route exact path="/login">
-                        <Login fetchToken={fetchToken}/>
+                        <Login />
                     </Route>
                     <Route>
                         <PageNotFound/>

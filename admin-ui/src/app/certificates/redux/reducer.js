@@ -17,12 +17,3 @@ export const pagesCount = (state = null, action) => {
             return state;
     }
 };
-
-export const status = (state = false, action) => {
-    switch (action.type) {
-        case types.TRIGGER_CERTIFICATE_UPDATE :
-            return !state;
-        default:
-            return state;
-    }
-};

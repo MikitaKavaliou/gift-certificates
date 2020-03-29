@@ -1,26 +1,14 @@
 import React from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import {useLocation} from "react-router-dom";
 
-export function DeleteModal({modalState, closeModal, certificate, token, updateCertificates, showAlert}) {
-    const onDeleteClick = async () => {
-        try {
-            const response = await fetch("https://localhost:8443/certificates/" + certificate.id, {
-                method: "DELETE",
-                headers: {
-                    "Authorization": "Bearer " + token
-                }
-            });
-            if (!response.ok) {
-                let responseBody = await response.json();
-                showAlert(responseBody.errorMessage);
-            }
-        } catch (e) {
-            showAlert("Server not responding.");
-        } finally {
-            closeModal();
-            updateCertificates();
-        }
+export function DeleteModal({modalState, closeModal, certificate, token, deleteCertificate}) {
+    const location = useLocation();
+
+    const onDeleteClick = () => {
+        deleteCertificate(token, certificate.id, location.search);
+        closeModal();
     };
 
     return (

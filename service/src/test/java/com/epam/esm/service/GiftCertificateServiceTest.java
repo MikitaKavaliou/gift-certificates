@@ -226,7 +226,7 @@ public class GiftCertificateServiceTest {
     parameters.put("description", "description");
     parameters.put("maxPrice", "20");
     parameters.put("minPrice", "asf");
-    when(certificateMapper.findByCriteria(any(), any(), any())).thenReturn(certificates);
+    when(certificateMapper.selectByCriteria(any(), any(), any())).thenReturn(certificates);
     when(certificateMapper.getCountOfSuitableRecordsOfFindByCriteria(any(), any())).thenReturn(1);
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     EntityListDto<GiftCertificateWithTagsDto> actual = certificateService.findByCriteria(parameters, tagList);
@@ -245,7 +245,7 @@ public class GiftCertificateServiceTest {
     List<String> tagList = Arrays.asList("tag", "names");
     parameters.put("name", "value");
     parameters.put("description", "description");
-    when(certificateMapper.findByCriteria(any(), any(), any())).thenReturn(certificates);
+    when(certificateMapper.selectByCriteria(any(), any(), any())).thenReturn(certificates);
     when(certificateMapper.getCountOfSuitableRecordsOfFindByCriteria(any(), any())).thenReturn(1);
     when(tagMapper.selectByCertificateId(any())).thenReturn(tags);
     EntityListDto<GiftCertificateWithTagsDto> actual = certificateService.findByCriteria(parameters, tagList);

@@ -1,4 +1,4 @@
-import {logOut} from "./duck/operations";
+import {logOut} from "./redux/operations";
 import {connect} from "react-redux";
 import {Navbar} from "./NavbarComponent";
 
@@ -9,7 +9,7 @@ const mapStateToProps = state => {
 };
 const mapDispatchToProps = dispatch => {
     return {
-        logOutUser() {
+        logOut() {
             dispatch(logOut());
         },
     }

@@ -7,70 +7,52 @@ import queryString from "query-string";
 import DeleteModal from "./DeleteModalContainer";
 import CertificateModal from "./CertificateModalContainer";
 
-export function Certificates({fetchToken, certificates, logOutUser, fetchCertificates, showAlert, certificateStatus}) {
+export function Certificates({token, validateToken, certificates, fetchCertificates, certificateStatus}) {
     const history = useHistory();
     const location = useLocation();
-    const [sortField, setSortField] = useState(null);
-    const [sortType, setSortType] = useState(null);
+    const [sortField, setSortField] = useState("create_date");
+    const [sortType, setSortType] = useState("desc");
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showCertificateModal, setShowCertificateModal] = useState(false);
     const [certificate, setCertificate] = useState({});
 
     useEffect(() => {
-        (async () => {
-            try {
-                const token = await fetchToken();
-                if (!token || !token.ok) {
-                    logOutUser();
-                    history.push("/login");
-                }
-                parseUrlSortProperties();
-                fetchCertificates(location.search);
-            } catch (e) {
-                logOutUser();
-                showAlert("Server Error");
-            }
-        })();
-
-        const parseUrlSortProperties = () => {
-            const queryParams = queryString.parse(location.search);
-            if (queryParams.sortField) {
-                const urlSortField = queryParams.sortField.toLowerCase();
-                if (urlSortField === "create_date" || urlSortField === "last_update_date" ||
-                    urlSortField === "name") {
-                    setSortField(urlSortField);
-                    if (queryParams.sortType) {
-                        const urlSortType = queryParams.sortType.toLowerCase();
-                        if (urlSortType === "asc" || urlSortType === "desc") {
-                            setSortType(urlSortType);
-                        } else {
-                            setSortType("desc");
-                        }
-                    } else {
-                        setSortType("desc");
+        if (!token) {
+            history.push("/login");
+        } else {
+            validateToken(token);
+        }
+        fetchCertificates(location.search);
+        const queryParams = queryString.parse(location.search);
+        if (queryParams.sortField) {
+            const urlSortField = queryParams.sortField.toLowerCase();
+            if (urlSortField === "create_date" || urlSortField === "last_update_date" || urlSortField === "name") {
+                setSortField(urlSortField);
+                if (queryParams.sortType) {
+                    const urlSortType = queryParams.sortType.toLowerCase();
+                    if (urlSortType === "asc" || urlSortType === "desc") {
+                        setSortType(urlSortType);
                     }
-                } else {
-                    setSortField("create_date");
-                    setSortType("desc");
                 }
-            } else {
-                setSortField("create_date");
-                setSortType("desc");
             }
         }
+    }, [fetchCertificates, history, location.search, certificateStatus, token, validateToken]);
 
-    }, [fetchCertificates, fetchToken, history, location.search, logOutUser, certificateStatus, showAlert]);
 
-
-    const handleSortClick = async e => {
+    const handleSortClick = e => {
         const chosenSortField = e.currentTarget.id;
         const chosenSortType = !sortType || sortType === "desc" ? "asc" : "desc";
         const queryParameters = queryString.parse(location.search);
         queryParameters.sortField = chosenSortField;
         queryParameters.sortType = chosenSortType;
-        history.push(
-            location.pathname + "?" + queryString.stringify(queryParameters));
+        history.push(location.pathname + "?" + queryString.stringify(queryParameters));
     };
+
+    const resetSort = () => {
+        setSortField("create_date");
+        setSortType("desc");
+    };
+
     const handleEditClick = (certificate) => {
         setCertificate(certificate);
         setShowCertificateModal(true);
@@ -95,7 +77,7 @@ export function Certificates({fetchToken, certificates, logOutUser, fetchCertifi
     return (
         <main>
             <div className="container-fluid">
-                <SearchForm/>
+                <SearchForm resetSort={resetSort}/>
                 <table className="table table-bordered table-striped">
                     <thead className="thead-light">
                     <tr>

@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
  * The type Purchase controller.
  */
 @RestController
-@RequestMapping(value = "/purchases", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/purchases", produces = MediaType.APPLICATION_JSON_VALUE)
 public class PurchaseController {
 
   private final PurchaseService purchaseService;

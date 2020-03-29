@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
  * The type Gift certificate controller. The class used for processing GiftCertificate-related requests.
  */
 @RestController
-@RequestMapping(value = "/certificates", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/certificates", produces = MediaType.APPLICATION_JSON_VALUE)
 public class GiftCertificateController {
 
   private final GiftCertificateService certificateService;

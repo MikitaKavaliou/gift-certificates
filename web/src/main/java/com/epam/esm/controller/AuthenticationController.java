@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * The type Authentication controller.
  */
-@RestController
-@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes =
+@RestController()
+@RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_VALUE, consumes =
     MediaType.APPLICATION_JSON_VALUE)
 public class AuthenticationController {
 
@@ -84,7 +84,7 @@ public class AuthenticationController {
    * @return the response entity
    */
   @Secured("ROLE_ADMIN")
-  @PostMapping(value = "token", params = "admin")
+  @PostMapping(value = "/token", params = "validateAdmin")
   public ResponseEntity<Void> validateAdminToken() {
     return ResponseEntity.status(HttpStatus.OK).build();
   }

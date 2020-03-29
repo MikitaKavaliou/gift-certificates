@@ -3,6 +3,8 @@ package com.epma.esm.controller;
 
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import com.epam.esm.config.RepositoryConfig;
@@ -12,6 +14,8 @@ import com.epam.esm.config.WebConfig;
 import com.epam.esm.dto.GiftCertificatePriceDto;
 import com.epam.esm.dto.GiftCertificateUpdateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
+import com.epam.esm.mapper.GiftCertificateMapper;
+import com.epam.esm.mapper.TagMapper;
 import com.epam.esm.model.GiftCertificate;
 import com.epam.esm.model.Role;
 import com.epam.esm.model.Tag;
@@ -25,26 +29,27 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import io.restassured.http.ContentType;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = {SecurityConfig.class, WebConfig.class, ServiceConfig.class,
     RepositoryConfig.class})
 public class GiftCertificateControllerTest {
 
-  private static final String ALL_CERTIFICATES_ENDPOINT = "/certificates";
+  private static final String ALL_CERTIFICATES_ENDPOINT = "/api/certificates";
   private static final String CERTIFICATE_LIST_SCHEMA_NAME =
       "validation/certificate/certificate-list-validation-schema.json";
   private static final String CERTIFICATE_OBJECT_SCHEMA_NAME =
@@ -59,26 +64,34 @@ public class GiftCertificateControllerTest {
   private AuthenticationFilter authenticationFilter;
   @Autowired
   private TokenService tokenService;
+  @MockBean
+  private GiftCertificateMapper certificateMapper;
+  @MockBean
+  private TagMapper tagMapper;
   private JsonSchemaFactory jsonSchemaFactory;
   private GiftCertificateWithTagsDto giftCertificateWithTagsDto;
   private GiftCertificateUpdateDto giftCertificateUpdateDto;
   private String adminToken;
   private String userToken;
+  private GiftCertificate giftCertificate;
+  private Tag tag;
 
 
   @Before
   public void initializeRestAssuredMockMvcWebApplicationContext() {
     MockMvc mockMvc =
         MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilters(authenticationFilter).build();
-    RestAssuredMockMvc.webAppContextSetup(webApplicationContext);
     RestAssuredMockMvc.mockMvc(mockMvc);
-    MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilter(authenticationFilter);
-    GiftCertificate giftCertificate = new GiftCertificate(10L, "name", "description", BigDecimal.valueOf(3.5),
+    giftCertificate = new GiftCertificate(10L, "name", "description", BigDecimal.valueOf(3.5),
+        LocalDateTime.now(), LocalDateTime.now(), 5);
+    GiftCertificate giftCertificateForCreation = new GiftCertificate(10L, "name", "description",
+        BigDecimal.valueOf(3.5),
         null, null, 5);
-    Tag tag = new Tag(1L, "for_rent");
+    tag = new Tag(1L, "for_rent");
     adminToken = tokenService.createToken(new User(8L, "username2", "password", Role.ADMIN)).getToken();
     userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER)).getToken();
-    giftCertificateWithTagsDto = new GiftCertificateWithTagsDto(giftCertificate, Collections.singletonList(tag));
+    giftCertificateWithTagsDto = new GiftCertificateWithTagsDto(giftCertificateForCreation,
+        Collections.singletonList(tag));
     giftCertificateUpdateDto =
         new GiftCertificateUpdateDto("name", "description", BigDecimal.valueOf(5), 2,
             Collections.singletonList(tag), Collections.singletonList(tag));
@@ -91,6 +104,10 @@ public class GiftCertificateControllerTest {
 
   @Test
   public void findAllCertificatesTest() {
+    when(certificateMapper.selectByCriteria(any(), any(), any()))
+        .thenReturn(Collections.singletonList(giftCertificate));
+    when(tagMapper.selectByCertificateId(any())).thenReturn(Collections.singletonList(tag));
+    when(certificateMapper.getCountOfSuitableRecordsOfFindByCriteria(any(), any())).thenReturn(1);
     given().when().get(ALL_CERTIFICATES_ENDPOINT)
         .then()
         .statusCode(HttpStatus.OK.value())
@@ -99,6 +116,8 @@ public class GiftCertificateControllerTest {
 
   @Test
   public void findCertificateByIdTestReturnsCertificateWithTags() {
+    when(certificateMapper.selectById(any())).thenReturn(Optional.of(giftCertificate));
+    when(tagMapper.selectByCertificateId(any())).thenReturn(Collections.singletonList(tag));
     given()
         .when().get(ALL_CERTIFICATES_ENDPOINT + "/47")
         .then()
@@ -109,6 +128,7 @@ public class GiftCertificateControllerTest {
 
   @Test
   public void findCertificateByIdTestReturnsExceptionObject() {
+    when(certificateMapper.selectById(any())).thenReturn(Optional.empty());
     given()
         .when().get(ALL_CERTIFICATES_ENDPOINT + "/40")
         .then()
@@ -120,6 +140,8 @@ public class GiftCertificateControllerTest {
   @Test
   public void createCertificateCorrectDataReturnsCreatedObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
+    when(certificateMapper.selectById(any())).thenReturn(Optional.of(giftCertificate));
+    when(tagMapper.selectByCertificateId(any())).thenReturn(Collections.singletonList(tag));
     given()
         .contentType(ContentType.JSON)
         .body(objectMapper.writeValueAsString(giftCertificateWithTagsDto))
@@ -179,6 +201,8 @@ public class GiftCertificateControllerTest {
 
   @Test
   public void findUserCertificatesCorrectRequestReturnsCertificates() {
+    when(certificateMapper.selectByUserId(any(), any())).thenReturn(Collections.singletonList(giftCertificate));
+    when(tagMapper.selectByCertificateId(any())).thenReturn(Collections.singletonList(tag));
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .when()
@@ -203,6 +227,8 @@ public class GiftCertificateControllerTest {
 
   @Test
   public void findAnyUserCertificatesCorrectRequestExceptionObject() {
+    when(certificateMapper.selectByUserId(any(), any())).thenReturn(Collections.singletonList(giftCertificate));
+    when(tagMapper.selectByCertificateId(any())).thenReturn(Collections.singletonList(tag));
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .when()
@@ -215,6 +241,8 @@ public class GiftCertificateControllerTest {
 
   @Test
   public void findAnyUserCertificatesUnauthorizedReturnsExceptionObject() {
+    when(certificateMapper.selectByUserId(any(), any())).thenReturn(Collections.singletonList(giftCertificate));
+    when(tagMapper.selectByCertificateId(any())).thenReturn(Collections.singletonList(tag));
     given()
         .when()
         .get(ALL_CERTIFICATES_ENDPOINT + "?userId=8")
@@ -227,6 +255,8 @@ public class GiftCertificateControllerTest {
   @Test
   public void updateCertificateCorrectDataReturnsUpdatedObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
+    when(certificateMapper.selectById(any())).thenReturn(Optional.of(giftCertificate));
+    when(tagMapper.selectByCertificateId(any())).thenReturn(Collections.singletonList(tag));
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .contentType(ContentType.JSON)
@@ -288,6 +318,8 @@ public class GiftCertificateControllerTest {
   @Test
   public void updatePriceUnauthorizedReturnsExceptionObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
+    when(certificateMapper.selectByUserId(any(), any())).thenReturn(Collections.singletonList(giftCertificate));
+    when(tagMapper.selectByCertificateId(any())).thenReturn(Collections.singletonList(tag));
     GiftCertificatePriceDto giftCertificatePriceDto = new GiftCertificatePriceDto(BigDecimal.valueOf(5));
     given()
         .header(AUTHORIZATION_HEADER_NAME, "someToken")
@@ -352,6 +384,8 @@ public class GiftCertificateControllerTest {
   @Test
   public void updatePriceCorrectDataReturnsUpdatedObject() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
+    when(certificateMapper.selectById(any())).thenReturn(Optional.of(giftCertificate));
+    when(tagMapper.selectByCertificateId(any())).thenReturn(Collections.singletonList(tag));
     GiftCertificatePriceDto giftCertificatePriceDto = new GiftCertificatePriceDto(BigDecimal.valueOf(5));
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
@@ -364,6 +398,8 @@ public class GiftCertificateControllerTest {
         .assertThat()
         .body(matchesJsonSchemaInClasspath(CERTIFICATE_OBJECT_SCHEMA_NAME).using(jsonSchemaFactory));
   }
+
+
 
   @Test
   public void deleteCertificateUnauthorizedReturnsExceptionObject() {
@@ -393,6 +429,7 @@ public class GiftCertificateControllerTest {
 
   @Test
   public void deleteCertificateSuccessfulDeletion() {
+    when(certificateMapper.delete(any())).thenReturn(1);
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .contentType(ContentType.JSON)
@@ -404,6 +441,7 @@ public class GiftCertificateControllerTest {
 
   @Test
   public void deleteCertificateNotFound() {
+    when(certificateMapper.delete(any())).thenReturn(0);
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .contentType(ContentType.JSON)

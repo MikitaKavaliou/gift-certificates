@@ -2,7 +2,7 @@ import {useHistory, useLocation} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import queryString from "query-string";
 
-export function SearchForm({hideAlert}) {
+export function SearchForm({hideAlert, resetSort}) {
     const history = useHistory();
     const location = useLocation();
     const [minPrice, setMinPrice] = useState("");
@@ -65,6 +65,7 @@ export function SearchForm({hideAlert}) {
         setTags("");
         setMinPrice("");
         setMaxPrice("");
+        resetSort();
         history.push(location.pathname);
     };
 
@@ -85,6 +86,10 @@ export function SearchForm({hideAlert}) {
         }
     };
 
+    const handlePricePaste = e => {
+        e.preventDefault();
+    };
+
     return (
         <form className="search-form" onSubmit={handleSubmit}>
             <div className="form-row">
@@ -92,7 +97,7 @@ export function SearchForm({hideAlert}) {
                     <input maxLength="1000" type="text" className="form-control"
                            onChange={handleChange} value={searchValue}
                            name="searchValue"
-                           placeholder="Description"/>
+                           placeholder="Part of name or description"/>
                 </div>
                 <div className="form-group col-md-3">
                     <input maxLength="500" type="text" className="form-control"
@@ -102,12 +107,14 @@ export function SearchForm({hideAlert}) {
                 <div className="form-group col-md-1">
                     <input type="text" className="form-control"
                            onKeyDown={handleKeyDown}
+                           onPaste={handlePricePaste}
                            onChange={handleChange} value={minPrice} name="minPrice"
                            placeholder="Min price: 5"/>
                 </div>
                 <div className="form-group col-md-1">
                     <input type="text" className="form-control"
                            onKeyDown={handleKeyDown}
+                           onPaste={handlePricePaste}
                            onChange={handleChange} value={maxPrice} name="maxPrice"
                            placeholder="Max price: 5"/>
                 </div>

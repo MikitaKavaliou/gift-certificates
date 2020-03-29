@@ -10,12 +10,7 @@ const putPagesCount = value => ({
     payload: value
 });
 
-const updateCertificatesStatus = () => ({
-    type: types.TRIGGER_CERTIFICATE_UPDATE
-});
-
 export default {
     putCertificates,
     putPagesCount,
-    updateCertificatesStatus
 }

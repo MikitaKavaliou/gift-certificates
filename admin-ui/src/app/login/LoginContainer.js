@@ -1,22 +1,21 @@
 import {connect} from "react-redux";
-import {hideAlert, logIn, logOut, showAlert} from "../common/duck/operations";
+import {hideAlert, validateToken} from "../common/redux/operations";
+import {logIn} from "./redux/operations";
 import LoginComponent from "./LoginComponent";
 
 const mapStateToProps = state => {
     return {
         token: state.token,
+        loginFailure: state.login.loginFailureShowStatus
     }
 };
 const mapDispatchToProps = dispatch => {
     return {
-        logInUser(token) {
-            dispatch(logIn(token));
+        logIn(credentials) {
+            dispatch(logIn(credentials))
         },
-        logOutUser() {
-            dispatch(logOut());
-        },
-        showAlert(message) {
-            dispatch(showAlert(message))
+        validateToken(token) {
+            dispatch(validateToken(token));
         },
         hideAlert() {
             dispatch(hideAlert())

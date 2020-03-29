@@ -1,4 +1,4 @@
-import {hideAlert} from "./duck/operations";
+import {hideAlert} from "./redux/operations";
 import {connect} from "react-redux";
 import {Alert} from "./AlertComponent";
 

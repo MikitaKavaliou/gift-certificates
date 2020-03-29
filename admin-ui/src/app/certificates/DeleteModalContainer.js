@@ -1,7 +1,6 @@
 import {connect} from "react-redux";
 import {DeleteModal} from "./DeleteModalComponent";
-import {updateCertificatesStatus} from "./duck/operations";
-import {showAlert} from "../common/duck/operations";
+import {deleteCertificate} from "./redux/operations";
 
 const mapStateToProps = state => {
     return {
@@ -11,11 +10,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        updateCertificates() {
-            dispatch(updateCertificatesStatus());
-        },
-        showAlert(message) {
-            dispatch(showAlert(message))
+        deleteCertificate(token, certificateId, parameters) {
+            dispatch(deleteCertificate(token, certificateId, parameters));
         },
     }
 };
