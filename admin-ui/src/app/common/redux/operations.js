@@ -1,10 +1,8 @@
 import Actions from "./actions"
 
-export const logOut = Actions.deleteToken;
-
-export const showAlert = message => dispatch => {
-    dispatch(Actions.putAlertMessage(message));
-    dispatch(Actions.showAlert());
+export const logOut = () => dispatch => {
+    dispatch(Actions.deleteToken());
+    dispatch(Actions.deleteRefreshToken())
 };
 
 export const hideAlert = () => dispatch => {
@@ -12,7 +10,7 @@ export const hideAlert = () => dispatch => {
     dispatch(Actions.deleteAlertMessage());
 };
 
-export const validateToken = token => async dispatch => {
+export const validateToken = (token, refreshToken) => async dispatch => {
     try {
         const response = await fetch("https://localhost:8443/api/token?validateAdmin", {
             method: "POST",
@@ -22,7 +20,23 @@ export const validateToken = token => async dispatch => {
             }
         });
         if (!response || !response.ok) {
-            dispatch(Actions.deleteToken());
+            const response = await fetch("https://localhost:8443/api/token?refresh", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    refreshToken: refreshToken
+                })
+            });
+            if (response && response.ok) {
+                const responseBody = await response.json();
+                dispatch(Actions.putToken(responseBody.token));
+                dispatch(Actions.putRefreshToken(responseBody.refreshToken))
+            } else {
+                dispatch(Actions.deleteToken());
+                dispatch(Actions.deleteRefreshToken());
+            }
         }
     } catch (e) {
         dispatch(Actions.putAlertMessage("Server error."));

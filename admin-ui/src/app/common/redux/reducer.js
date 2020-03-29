@@ -11,6 +11,17 @@ export const token = (state = null, action) => {
     }
 };
 
+export const refreshToken = (state = null, action) => {
+    switch (action.type) {
+        case types.PUT_REFRESH_TOKEN :
+            return action.payload;
+        case types.DELETE_REFRESH_TOKEN:
+            return null;
+        default:
+            return state;
+    }
+};
+
 export const showStatus = (state = false, action) => {
     switch (action.type) {
         case types.SHOW_ALERT:

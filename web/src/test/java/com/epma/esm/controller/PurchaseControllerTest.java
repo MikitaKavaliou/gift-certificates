@@ -70,8 +70,8 @@ public class PurchaseControllerTest {
     MockMvc mockMvc =
         MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilters(authenticationFilter).build();
     RestAssuredMockMvc.mockMvc(mockMvc);
-    adminToken = tokenService.createToken(new User(8L, "username2", "password", Role.ADMIN)).getToken();
-    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER)).getToken();
+    adminToken = tokenService.createTokenForUser(new User(8L, "username2", "password", Role.ADMIN)).getToken();
+    userToken = tokenService.createTokenForUser(new User(1L, "username", "password", Role.USER)).getToken();
     jsonSchemaFactory = JsonSchemaFactory
         .newBuilder().setValidationConfiguration(ValidationConfiguration
             .newBuilder().setDefaultVersion(SchemaVersion.DRAFTV4)

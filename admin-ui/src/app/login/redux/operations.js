@@ -14,6 +14,7 @@ export const logIn = (credentials) => async dispatch => {
         const responseBody = await response.json();
         if (response.ok && (JWT(responseBody.token).role === "ADMIN")) {
             dispatch(CommonActions.putToken(responseBody.token));
+            dispatch(CommonActions.putRefreshToken(responseBody.refreshToken))
         } else {
             dispatch(Actions.showLoginFailure());
         }

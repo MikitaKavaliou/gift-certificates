@@ -9,7 +9,10 @@ import thunk from "redux-thunk";
 import subscriber from "./subsriber"
 
 export const store = createStore(rootReducer, {
-    token: localStorage.getItem("token")
+    user: {
+        token: localStorage.getItem("token"),
+        refreshToken: localStorage.getItem("refreshToken")
+    }
 }, applyMiddleware(thunk));
 
 store.subscribe(subscriber);

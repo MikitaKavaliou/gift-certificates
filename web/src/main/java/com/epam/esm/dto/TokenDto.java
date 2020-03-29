@@ -1,21 +1,16 @@
 package com.epam.esm.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import java.time.LocalDateTime;
-
 public class TokenDto {
 
   private String token;
-  private LocalDateTime issuedAt;
-  private LocalDateTime expiresAt;
+  private String refreshToken;
 
   public TokenDto() {
   }
 
-  public TokenDto(String token, LocalDateTime issuedAt, LocalDateTime expiresAt) {
+  public TokenDto(String token, String refreshToken) {
     this.token = token;
-    this.issuedAt = issuedAt;
-    this.expiresAt = expiresAt;
+    this.refreshToken = refreshToken;
   }
 
   public String getToken() {
@@ -26,21 +21,11 @@ public class TokenDto {
     this.token = token;
   }
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-  public LocalDateTime getIssuedAt() {
-    return issuedAt;
+  public String getRefreshToken() {
+    return refreshToken;
   }
 
-  public void setIssuedAt(LocalDateTime issuedAt) {
-    this.issuedAt = issuedAt;
-  }
-
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-  public LocalDateTime getExpiresAt() {
-    return expiresAt;
-  }
-
-  public void setExpiresAt(LocalDateTime expiresAt) {
-    this.expiresAt = expiresAt;
+  public void setRefreshToken(String refreshToken) {
+    this.refreshToken = refreshToken;
   }
 }

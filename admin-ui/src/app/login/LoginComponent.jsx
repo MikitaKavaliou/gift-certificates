@@ -3,17 +3,17 @@ import {useHistory} from "react-router-dom";
 import {Form, Formik, useField} from "formik";
 import * as Yup from "yup"
 
-export default function LoginComponent({token, loginFailure, validateToken, hideAlert, logIn}) {
+export default function LoginComponent({token, refreshToken, loginFailure, validateToken, hideAlert, logIn}) {
     const history = useHistory();
 
     useEffect(() => {
         if (token) {
-            validateToken(token);
+            validateToken(token, refreshToken);
             if (token) {
                 history.push("/certificates");
             }
         }
-    }, [history, token, validateToken]);
+    }, [history, refreshToken, token, validateToken]);
 
     const handleSubmit = values => {
         hideAlert();

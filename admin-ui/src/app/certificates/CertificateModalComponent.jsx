@@ -214,6 +214,7 @@ export function CertificateModal({certificate, token, modalState, closeModal, cr
                     <Form.Label>Description</Form.Label>
                     <Form.Control as="textarea"
                                   rows="3"
+                                  className="text-area"
                                   name="description"
                                   placeholder="Certificate description"
                                   value={values.description}

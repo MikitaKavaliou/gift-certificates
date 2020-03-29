@@ -1,6 +1,11 @@
 import {combineReducers} from "redux";
 import {certificateList, pagesCount} from "./app/certificates/redux/reducer"
-import {message, showStatus, token} from "./app/common/redux/reducer";
+import {
+  message,
+  refreshToken,
+  showStatus,
+  token
+} from "./app/common/redux/reducer";
 import {loginFailureShowStatus} from "./app/login/redux/reducer";
 
 export default combineReducers({
@@ -8,7 +13,10 @@ export default combineReducers({
         certificateList,
         pagesCount
     }),
-    token,
+    user: combineReducers({
+        token,
+        refreshToken,
+    }),
     login: combineReducers({
         loginFailureShowStatus
     }),

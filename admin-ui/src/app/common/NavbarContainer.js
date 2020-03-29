@@ -4,7 +4,7 @@ import {Navbar} from "./NavbarComponent";
 
 const mapStateToProps = state => {
     return {
-        token: state.token
+        token: state.user.token
     }
 };
 const mapDispatchToProps = dispatch => {

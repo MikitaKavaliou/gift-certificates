@@ -21,10 +21,10 @@ export function App({alertShowStatus}) {
                         <Home/>
                     </Route>
                     <Route exact path="/certificates">
-                        <Certificate />
+                        <Certificate/>
                     </Route>
                     <Route exact path="/login">
-                        <Login />
+                        <Login/>
                     </Route>
                     <Route>
                         <PageNotFound/>
@@ -32,5 +32,5 @@ export function App({alertShowStatus}) {
                 </Switch>
             </Router>
             <Footer/>
-        </>);
+        </>)
 }

@@ -4,7 +4,7 @@ import {deleteCertificate} from "./redux/operations";
 
 const mapStateToProps = state => {
     return {
-        token: state.token,
+        token: state.user.token,
     }
 };
 

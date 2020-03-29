@@ -5,8 +5,9 @@ import LoginComponent from "./LoginComponent";
 
 const mapStateToProps = state => {
     return {
-        token: state.token,
-        loginFailure: state.login.loginFailureShowStatus
+        token: state.user.token,
+        loginFailure: state.login.loginFailureShowStatus,
+        refreshToken: state.user.refreshToken
     }
 };
 const mapDispatchToProps = dispatch => {
@@ -14,8 +15,8 @@ const mapDispatchToProps = dispatch => {
         logIn(credentials) {
             dispatch(logIn(credentials))
         },
-        validateToken(token) {
-            dispatch(validateToken(token));
+        validateToken(token, refreshToken) {
+            dispatch(validateToken(token, refreshToken));
         },
         hideAlert() {
             dispatch(hideAlert())

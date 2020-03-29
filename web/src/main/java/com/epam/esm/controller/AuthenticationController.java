@@ -1,5 +1,6 @@
 package com.epam.esm.controller;
 
+import com.epam.esm.dto.RefreshTokenDto;
 import com.epam.esm.dto.TokenDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
@@ -60,7 +61,7 @@ public class AuthenticationController {
         .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())).getPrincipal();
     return ResponseEntity
         .status(HttpStatus.OK.value())
-        .body(tokenService.createToken(authenticatedUser));
+        .body(tokenService.createTokenForUser(authenticatedUser));
   }
 
   /**
@@ -75,7 +76,7 @@ public class AuthenticationController {
     validateUser(user);
     return ResponseEntity
         .status(HttpStatus.CREATED.value())
-        .body(tokenService.createToken(userService.create(user)));
+        .body(tokenService.createTokenForUser(userService.create(user)));
   }
 
   /**
@@ -89,11 +90,26 @@ public class AuthenticationController {
     return ResponseEntity.status(HttpStatus.OK).build();
   }
 
+
   /**
-   * Validate user.
+   * Refresh token response entity.
    *
-   * @param user the user
+   * @param refreshTokenDto the refresh token dto
+   * @return the response entity
    */
+  @PostMapping(value = "/token", params = "refresh")
+  public ResponseEntity<TokenDto> refreshToken(@RequestBody RefreshTokenDto refreshTokenDto) {
+    String refreshToken = refreshTokenDto.getRefreshToken();
+    if (tokenService.isValidRefreshToken(refreshToken)) {
+      return ResponseEntity
+          .status(HttpStatus.OK.value())
+          .body(tokenService.createTokenFromRefreshToken(refreshToken));
+    } else {
+      throw new ServerException(ExceptionType.AUTHENTICATION_FAILURE);
+    }
+  }
+
+
   private void validateUser(User user) {
     if (!UserValidator.isValidUser(user)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);

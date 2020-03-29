@@ -88,8 +88,8 @@ public class GiftCertificateControllerTest {
         BigDecimal.valueOf(3.5),
         null, null, 5);
     tag = new Tag(1L, "for_rent");
-    adminToken = tokenService.createToken(new User(8L, "username2", "password", Role.ADMIN)).getToken();
-    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER)).getToken();
+    adminToken = tokenService.createTokenForUser(new User(8L, "username2", "password", Role.ADMIN)).getToken();
+    userToken = tokenService.createTokenForUser(new User(1L, "username", "password", Role.USER)).getToken();
     giftCertificateWithTagsDto = new GiftCertificateWithTagsDto(giftCertificateForCreation,
         Collections.singletonList(tag));
     giftCertificateUpdateDto =

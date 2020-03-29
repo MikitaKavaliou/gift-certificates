@@ -7,7 +7,7 @@ import queryString from "query-string";
 import DeleteModal from "./DeleteModalContainer";
 import CertificateModal from "./CertificateModalContainer";
 
-export function Certificates({token, validateToken, certificates, fetchCertificates, certificateStatus}) {
+export function Certificates({token, refreshToken, validateToken, certificates, fetchCertificates, certificateStatus}) {
     const history = useHistory();
     const location = useLocation();
     const [sortField, setSortField] = useState("create_date");
@@ -20,7 +20,7 @@ export function Certificates({token, validateToken, certificates, fetchCertifica
         if (!token) {
             history.push("/login");
         } else {
-            validateToken(token);
+            validateToken(token, refreshToken);
         }
         fetchCertificates(location.search);
         const queryParams = queryString.parse(location.search);
@@ -36,7 +36,7 @@ export function Certificates({token, validateToken, certificates, fetchCertifica
                 }
             }
         }
-    }, [fetchCertificates, history, location.search, certificateStatus, token, validateToken]);
+    }, [fetchCertificates, history, location.search, certificateStatus, token, validateToken, refreshToken]);
 
 
     const handleSortClick = e => {

@@ -6,7 +6,8 @@ import {validateToken} from "../common/redux/operations";
 const mapStateToProps = state => {
     return {
         certificates: state.certificates.certificateList,
-        token: state.token
+        token: state.user.token,
+        refreshToken: state.user.refreshToken
     }
 };
 const mapDispatchToProps = dispatch => {
@@ -14,8 +15,8 @@ const mapDispatchToProps = dispatch => {
         fetchCertificates(parameters) {
             dispatch(fetchCertificates(parameters));
         },
-        validateToken(token) {
-            dispatch(validateToken(token));
+        validateToken(token, refreshToken) {
+            dispatch(validateToken(token, refreshToken));
         }
     }
 };

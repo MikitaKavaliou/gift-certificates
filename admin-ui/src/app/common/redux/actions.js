@@ -9,6 +9,15 @@ const deleteToken = () => ({
     type: types.DELETE_TOKEN
 });
 
+const putRefreshToken = value => ({
+    type: types.PUT_REFRESH_TOKEN,
+    payload: value
+});
+
+const deleteRefreshToken = () => ({
+    type: types.DELETE_REFRESH_TOKEN
+});
+
 const showAlert = () => ({
     type: types.SHOW_ALERT
 });
@@ -28,6 +37,8 @@ const deleteAlertMessage = () => ({
 export default {
     putToken,
     deleteToken,
+    putRefreshToken,
+    deleteRefreshToken,
     showAlert,
     hideAlert,
     putAlertMessage,

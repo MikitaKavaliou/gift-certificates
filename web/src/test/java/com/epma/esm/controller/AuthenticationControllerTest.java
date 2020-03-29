@@ -11,11 +11,13 @@ import com.epam.esm.config.RepositoryConfig;
 import com.epam.esm.config.SecurityConfig;
 import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.config.WebConfig;
+import com.epam.esm.dto.RefreshTokenDto;
 import com.epam.esm.mapper.UserMapper;
 import com.epam.esm.model.Role;
 import com.epam.esm.model.User;
 import com.epam.esm.security.AuthenticationFilter;
 import com.epam.esm.security.TokenService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonschema.SchemaVersion;
 import com.github.fge.jsonschema.cfg.ValidationConfiguration;
@@ -45,6 +47,7 @@ public class AuthenticationControllerTest {
   private static final String LOGIN_ENDPOINT = "/api/login";
   private static final String SIGNUP_ENDPOINT = "/api/signup";
   private static final String VALIDATE_ADMIN_TOKEN_ENDPOINT = "/api/token?validateAdmin";
+  private static final String REFRESH_TOKEN_ENDPOINT = "/api/token?refresh";
   private static final String TOKEN_OBJECT_SCHEMA_NAME =
       "validation/token/token-object-validation-schema.json";
   private static final String EXCEPTION_OBJECT_SCHEMA_NAME =
@@ -63,14 +66,17 @@ public class AuthenticationControllerTest {
   private JsonSchemaFactory jsonSchemaFactory;
   private String userToken;
   private String adminToken;
+  private String userRefreshToken;
 
   @Before
   public void initializeRestAssuredMockMvcWebApplicationContext() {
     MockMvc mockMvc =
         MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilters(authenticationFilter).build();
     RestAssuredMockMvc.mockMvc(mockMvc);
-    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER)).getToken();
-    adminToken = tokenService.createToken(new User(2L, "username2", "password", Role.ADMIN)).getToken();
+    userToken = tokenService.createTokenForUser(new User(1L, "username", "password", Role.USER)).getToken();
+    adminToken = tokenService.createTokenForUser(new User(2L, "username2", "password", Role.ADMIN)).getToken();
+    userRefreshToken =
+        tokenService.createTokenForUser(new User(1L, "username", "password", Role.USER)).getRefreshToken();
     jsonSchemaFactory = JsonSchemaFactory
         .newBuilder().setValidationConfiguration(ValidationConfiguration
             .newBuilder().setDefaultVersion(SchemaVersion.DRAFTV4)
@@ -241,5 +247,35 @@ public class AuthenticationControllerTest {
         .post(VALIDATE_ADMIN_TOKEN_ENDPOINT)
         .then()
         .statusCode(HttpStatus.UNAUTHORIZED.value());
+  }
+
+  @Test
+  public void refreshTokenSuccessfulRefresh() throws JsonProcessingException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    RefreshTokenDto refreshTokenDto = new RefreshTokenDto(userRefreshToken);
+    given()
+        .contentType(ContentType.JSON)
+        .body(objectMapper.writeValueAsString(refreshTokenDto))
+        .when()
+        .post(REFRESH_TOKEN_ENDPOINT)
+        .then()
+        .statusCode(HttpStatus.OK.value())
+        .assertThat()
+        .body(matchesJsonSchemaInClasspath(TOKEN_OBJECT_SCHEMA_NAME).using(jsonSchemaFactory));
+  }
+
+  @Test
+  public void refreshTokenReturnExceptionObject() throws JsonProcessingException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    RefreshTokenDto refreshTokenDto = new RefreshTokenDto("userRefreshToken");
+    given()
+        .contentType(ContentType.JSON)
+        .body(objectMapper.writeValueAsString(refreshTokenDto))
+        .when()
+        .post(REFRESH_TOKEN_ENDPOINT)
+        .then()
+        .statusCode(HttpStatus.UNAUTHORIZED.value())
+        .assertThat()
+        .body(matchesJsonSchemaInClasspath(EXCEPTION_OBJECT_SCHEMA_NAME).using(jsonSchemaFactory));
   }
 }
