@@ -1,7 +1,7 @@
 package com.epam.esm.service;
 
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.model.Tag;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,7 +31,7 @@ public interface TagService {
    * @param parameters the parameters
    * @return the list of tags
    */
-  List<Tag> findAll(Map<String, String> parameters);
+  EntityListDto<Tag> findAll(Map<String, String> parameters);
 
   /**
    * Find the most popular tag of highest spending user tag.

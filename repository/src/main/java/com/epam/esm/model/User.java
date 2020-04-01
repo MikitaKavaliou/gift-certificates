@@ -1,9 +1,7 @@
 package com.epam.esm.model;
 
 import java.util.Objects;
-import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
 public class User {
 
   private Long id;

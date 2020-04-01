@@ -29,7 +29,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws IOException, ServletException {
     String token = getTokenFromHeader(request);
-    if (tokenService.isValidToken(token)) {
+    if (tokenService.isValidAcceptToken(token)) {
       SecurityContextHolder.getContext().setAuthentication(getAuthenticationForUserWithExistedToken(token));
     } else {
       SecurityContextHolder.getContext().setAuthentication(getAuthenticationForGuest());

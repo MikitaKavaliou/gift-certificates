@@ -6,13 +6,13 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.mapper.TagMapper;
 import com.epam.esm.model.Tag;
 import com.epam.esm.service.impl.TagServiceImpl;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -64,9 +64,10 @@ public class TagServiceTest {
 
   @Test
   public void findAllTestCorrectFoundTags() {
-    List<Tag> expected = Collections.singletonList(tag);
-    when(tagMapper.selectAll(any())).thenReturn(expected);
-    Assert.assertEquals(expected, tagService.findAll(new HashMap<>()));
+    EntityListDto<Tag> expected = new EntityListDto<>(Collections.singletonList(tag));
+    when(tagMapper.selectAll(any())).thenReturn(Collections.singletonList(tag));
+    EntityListDto<Tag> actual = tagService.findAll(new HashMap<>());
+    Assert.assertEquals(expected.getGiftCertificatesWithTags().size(), actual.getGiftCertificatesWithTags().size());
   }
 
   @Test

@@ -4,9 +4,13 @@
   "properties": {
     "token": {
       "type": "string"
+    },
+    "refreshToken": {
+      "type": "string"
     }
   },
   "required": [
-    "token"
+    "token",
+    "refreshToken"
   ]
 }

@@ -1,5 +1,6 @@
 package com.epam.esm.service.impl;
 
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.dto.PurchaseWithCertificateDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
@@ -49,12 +50,12 @@ public class PurchaseServiceImpl implements PurchaseService {
   }
 
   @Override
-  public List<PurchaseWithCertificateDto> findPurchasesByUserId(Long userId, String resourceUrl,
+  public EntityListDto<PurchaseWithCertificateDto> findPurchasesByUserId(Long userId, String resourceUrl,
       Map<String, String> parameters) {
     List<Purchase> purchases = purchaseMapper.selectByUserId(userId, PaginationUtil.createRowBounds(parameters));
-    return purchases
+    return new EntityListDto<>(purchases
         .stream().map(p -> p.getGiftCertificateId() == null ? new PurchaseWithCertificateDto(p, null)
             : new PurchaseWithCertificateDto(p, resourceUrl + p.getGiftCertificateId()))
-        .collect(Collectors.toList());
+        .collect(Collectors.toList()));
   }
 }

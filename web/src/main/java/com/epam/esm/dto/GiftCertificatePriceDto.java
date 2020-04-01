@@ -1,12 +1,8 @@
 package com.epam.esm.dto;
 
 import java.math.BigDecimal;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "giftCertificate")
-@XmlAccessorType(XmlAccessType.FIELD)
+
 public class GiftCertificatePriceDto {
 
   private BigDecimal price;

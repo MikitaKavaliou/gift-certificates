@@ -1,5 +1,6 @@
 package com.epam.esm.controller;
 
+import com.epam.esm.dto.RefreshTokenDto;
 import com.epam.esm.dto.TokenDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
@@ -22,9 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * The type Authentication controller.
  */
-@RestController
-@RequestMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}, consumes =
-    {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RestController()
+@RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_VALUE, consumes =
+    MediaType.APPLICATION_JSON_VALUE)
 public class AuthenticationController {
 
   private final AuthenticationManager authenticationManager;
@@ -60,7 +61,7 @@ public class AuthenticationController {
         .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())).getPrincipal();
     return ResponseEntity
         .status(HttpStatus.OK.value())
-        .body(tokenService.createToken(authenticatedUser));
+        .body(tokenService.createTokenForUser(authenticatedUser));
   }
 
   /**
@@ -75,15 +76,41 @@ public class AuthenticationController {
     validateUser(user);
     return ResponseEntity
         .status(HttpStatus.CREATED.value())
-        .body(tokenService.createToken(userService.create(user)));
+        .body(tokenService.createTokenForUser(userService.create(user)));
   }
 
   /**
-   * Validate user.
+   * Validate admin token response entity.
    *
-   * @param user the user
+   * @return the response entity
    */
-  public void validateUser(User user) {
+  @Secured("ROLE_ADMIN")
+  @PostMapping(value = "/token", params = "validateAdmin")
+  public ResponseEntity<Void> validateAdminToken() {
+    return ResponseEntity.status(HttpStatus.OK).build();
+  }
+
+
+  /**
+   * Refresh token response entity.
+   *
+   * @param refreshTokenDto the refresh token dto
+   * @return the response entity
+   */
+  @PostMapping(value = "/token", params = "refresh")
+  public ResponseEntity<TokenDto> refreshToken(@RequestBody RefreshTokenDto refreshTokenDto) {
+    String refreshToken = refreshTokenDto.getRefreshToken();
+    if (tokenService.isValidRefreshToken(refreshToken)) {
+      return ResponseEntity
+          .status(HttpStatus.OK.value())
+          .body(tokenService.createTokenFromRefreshToken(refreshToken));
+    } else {
+      throw new ServerException(ExceptionType.AUTHENTICATION_FAILURE);
+    }
+  }
+
+
+  private void validateUser(User user) {
     if (!UserValidator.isValidUser(user)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
     }
