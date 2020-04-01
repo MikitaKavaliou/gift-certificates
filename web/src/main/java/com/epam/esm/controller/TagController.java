@@ -1,6 +1,6 @@
 package com.epam.esm.controller;
 
-import com.epam.esm.dto.TagsListDto;
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.exception.ExceptionType;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.model.Tag;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  * The type Tag controller. The class used for processing Tag-related requests.
  */
 @RestController
-@RequestMapping(value = "/tags", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(value = "/api/tags", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TagController {
 
   private final TagService tagService;
@@ -47,7 +47,7 @@ public class TagController {
    * @return the service response
    */
   @Secured("ROLE_ADMIN")
-  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Tag> createTag(@RequestBody Tag tag) {
     if (!TagValidator.isValidTag(tag)) {
       throw new ServerException(ExceptionType.INCORRECT_INPUT_DATA);
@@ -75,8 +75,8 @@ public class TagController {
    */
   @Secured({"ROLE_ADMIN", "ROLE_USER"})
   @GetMapping()
-  public ResponseEntity<TagsListDto> findAllTags(@RequestParam Map<String, String> parameters) {
-    return ResponseEntity.status(HttpStatus.OK.value()).body(new TagsListDto(tagService.findAll(parameters)));
+  public ResponseEntity<EntityListDto<Tag>> findAllTags(@RequestParam Map<String, String> parameters) {
+    return ResponseEntity.status(HttpStatus.OK.value()).body(tagService.findAll(parameters));
   }
 
   /**

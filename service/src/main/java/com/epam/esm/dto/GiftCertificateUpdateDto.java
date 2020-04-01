@@ -5,25 +5,15 @@ import com.epam.esm.model.Tag;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.math.BigDecimal;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "giftCertificate")
-@XmlAccessorType(XmlAccessType.FIELD)
+
 public class GiftCertificateUpdateDto {
 
   private String name;
   private String description;
   private BigDecimal price;
   private Integer duration;
-  @XmlElementWrapper(name = "tagsForAdding")
-  @XmlElement(name = "tag")
   private List<Tag> tagsForAdding;
-  @XmlElementWrapper(name = "tagsForDeletion")
-  @XmlElement(name = "tag")
   private List<Tag> tagsForDeletion;
 
   public GiftCertificateUpdateDto() {

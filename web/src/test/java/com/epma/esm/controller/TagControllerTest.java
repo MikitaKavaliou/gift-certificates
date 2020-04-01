@@ -2,12 +2,15 @@ package com.epma.esm.controller;
 
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import com.epam.esm.config.RepositoryConfig;
 import com.epam.esm.config.SecurityConfig;
 import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.config.WebConfig;
+import com.epam.esm.mapper.TagMapper;
 import com.epam.esm.model.Role;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
@@ -19,25 +22,26 @@ import com.github.fge.jsonschema.cfg.ValidationConfiguration;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import io.restassured.http.ContentType;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import java.util.Collections;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = {SecurityConfig.class, WebConfig.class, ServiceConfig.class,
     RepositoryConfig.class})
 public class TagControllerTest {
 
-  private static final String ALL_TAGS_ENDPOINT = "/tags";
+  private static final String ALL_TAGS_ENDPOINT = "/api/tags";
   private static final String TAG_LIST_SCHEMA_NAME =
       "validation/tag/tag-list-validation-schema.json";
   private static final String TAG_OBJECT_SCHEMA_NAME =
@@ -52,6 +56,8 @@ public class TagControllerTest {
   private AuthenticationFilter authenticationFilter;
   @Autowired
   private TokenService tokenService;
+  @MockBean
+  private TagMapper tagMapper;
   private JsonSchemaFactory jsonSchemaFactory;
   private String adminToken;
   private String userToken;
@@ -60,11 +66,9 @@ public class TagControllerTest {
   public void initializeRestAssuredMockMvcWebApplicationContext() {
     MockMvc mockMvc =
         MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilters(authenticationFilter).build();
-    RestAssuredMockMvc.webAppContextSetup(webApplicationContext);
     RestAssuredMockMvc.mockMvc(mockMvc);
-    MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilter(authenticationFilter);
-    adminToken = tokenService.createToken(new User(47L, "username2", "password", Role.ADMIN)).getToken();
-    userToken = tokenService.createToken(new User(1L, "username", "password", Role.USER)).getToken();
+    adminToken = tokenService.createTokenForUser(new User(47L, "username2", "password", Role.ADMIN)).getToken();
+    userToken = tokenService.createTokenForUser(new User(1L, "username", "password", Role.USER)).getToken();
     jsonSchemaFactory = JsonSchemaFactory
         .newBuilder().setValidationConfiguration(ValidationConfiguration
             .newBuilder().setDefaultVersion(SchemaVersion.DRAFTV4)
@@ -138,6 +142,7 @@ public class TagControllerTest {
 
   @Test
   public void findTagByIdTestReturnsTag() {
+    when(tagMapper.selectById(any())).thenReturn(Optional.of(new Tag(1L, "name")));
     given()
         .header(AUTHORIZATION_HEADER_NAME, userToken)
         .when().get(ALL_TAGS_ENDPOINT + "/9")
@@ -160,6 +165,7 @@ public class TagControllerTest {
 
   @Test
   public void findAllTagsTestReturnsTags() {
+    when(tagMapper.selectAll(any())).thenReturn(Collections.singletonList(new Tag(1L, "name")));
     given()
         .header(AUTHORIZATION_HEADER_NAME, userToken)
         .when().get(ALL_TAGS_ENDPOINT)
@@ -182,6 +188,7 @@ public class TagControllerTest {
 
   @Test
   public void findTheMostPopularTagTestReturnsTag() {
+    when(tagMapper.selectMostPopularTagOfHighestSpendingUser()).thenReturn(new Tag(1L, "name"));
     given()
         .header(AUTHORIZATION_HEADER_NAME, userToken)
         .when().get(ALL_TAGS_ENDPOINT + "?mostPopular")
@@ -230,6 +237,7 @@ public class TagControllerTest {
 
   @Test
   public void deleteTagSuccessfulDeletion() {
+    when(tagMapper.deleteById(any())).thenReturn(1);
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .contentType(ContentType.JSON)
@@ -241,6 +249,7 @@ public class TagControllerTest {
 
   @Test
   public void deleteTagNotFound() {
+    when(tagMapper.deleteById(any())).thenReturn(0);
     given()
         .header(AUTHORIZATION_HEADER_NAME, adminToken)
         .contentType(ContentType.JSON)

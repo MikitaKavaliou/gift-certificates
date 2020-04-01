@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
+import com.epam.esm.dto.EntityListDto;
 import com.epam.esm.dto.PurchaseWithCertificateDto;
 import com.epam.esm.exception.ServerException;
 import com.epam.esm.mapper.PurchaseMapper;
@@ -63,12 +64,14 @@ public class PurchaseServiceTest {
   @Test
   public void findPurchasesByUserIdTest() {
     when(purchaseMapper.selectByUserId(any(), any())).thenReturn(purchases);
-    List<PurchaseWithCertificateDto> actual = purchaseService
+    EntityListDto<PurchaseWithCertificateDto> actual = purchaseService
         .findPurchasesByUserId(1L, resourceUrl, new HashMap<>());
-    List<PurchaseWithCertificateDto> expected = Arrays.asList(new PurchaseWithCertificateDto(firstPurchase,
-            resourceUrl + firstPurchase.getGiftCertificateId()),
-        new PurchaseWithCertificateDto(secondPurchase, null));
-    Assert.assertEquals(expected.size(), actual.size());
-    Assert.assertTrue(new ReflectionEquals(actual.get(0)).matches(expected.get(0)));
+    EntityListDto<PurchaseWithCertificateDto> expected =
+        new EntityListDto<>(Arrays.asList(new PurchaseWithCertificateDto(firstPurchase,
+                resourceUrl + firstPurchase.getGiftCertificateId()),
+            new PurchaseWithCertificateDto(secondPurchase, null)));
+    Assert.assertEquals(expected.getGiftCertificatesWithTags().size(), actual.getGiftCertificatesWithTags().size());
+    Assert.assertTrue(new ReflectionEquals(actual.getGiftCertificatesWithTags().get(0))
+        .matches(expected.getGiftCertificatesWithTags().get(0)));
   }
 }
