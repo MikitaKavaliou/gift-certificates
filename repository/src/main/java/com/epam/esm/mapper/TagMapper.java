@@ -81,17 +81,18 @@ public interface TagMapper {
   @Delete("DELETE FROM tag WHERE tag_id = #{tagId}")
   int deleteById(Long tagId);
 
-  @Select("SELECT t.tag_id, t.name FROM purchase p "
-      + "join gift_certificate g ON p.gift_certificate_id=g.gift_certificate_id "
-      + "join tag_gift_certificate tg ON g.gift_certificate_id=tg.gift_certificate_id "
-      + "join tag t ON tg.tag_id=t.tag_id "
-      + "WHERE p.user_id = (SELECT p.user_id FROM purchase p "
+  @Select("SELECT t.tag_id, t.name FROM tag T WHERE t.tag_id = ("
+      + "       SELECT tg.tag_id FROM purchase p "
+      + "       join gift_certificate g ON p.gift_certificate_id=g.gift_certificate_id "
+      + "       join tag_gift_certificate tg ON g.gift_certificate_id=tg.gift_certificate_id "
+      + "       WHERE p.user_id = ("
+      + "                   SELECT p.user_id FROM purchase p "
       + "                   group by p.user_id "
       + "                   order by sum(p.cost) desc "
       + "                   LIMIT 1) "
-      + "group by t.tag_id "
-      + "order by count(t.name) desc "
-      + "LIMIT 1")
+      + "       group by tg.tag_id "
+      + "       order by count(tg.tag_id) desc "
+      + "       LIMIT 1)")
   @Results({
       @Result(property = "id", column = "tag_id"),
       @Result(property = "name", column = "name"),
