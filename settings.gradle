@@ -2,3 +2,5 @@ rootProject.name = 'rest'
 include 'repository'
 include 'service'
 include 'web'
+include 'file-processing'
+

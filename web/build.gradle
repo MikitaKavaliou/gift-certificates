@@ -6,6 +6,7 @@ plugins {
 }
 dependencies {
     api project(":service")
+    implementation project(":file-processing")
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude module: "spring-boot-starter-tomcat"
     }
