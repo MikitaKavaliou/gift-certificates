@@ -9,6 +9,9 @@ subprojects {
     targetCompatibility = 11
     repositories {
         mavenCentral()
+        maven {
+            url "https://invesdwin.de/artifactory/invesdwin-oss-remote"
+        }
     }
 }
 allprojects {
