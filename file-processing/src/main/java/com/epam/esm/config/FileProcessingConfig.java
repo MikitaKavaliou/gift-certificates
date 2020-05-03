@@ -18,7 +18,7 @@ public class FileProcessingConfig {
 
   @Bean
   public LinkedBlockingQueue<File> filesQueue() {
-    return new LinkedBlockingQueue<>(threadCount);
+    return new LinkedBlockingQueue<>(threadCount * 2);
   }
 
   @Bean

@@ -1,5 +1,6 @@
 package com.epam.esm.processor;
 
+import com.epam.esm.mapper.FileMapper;
 import com.epam.esm.mapper.GiftCertificateMapper;
 import com.epam.esm.model.GiftCertificate;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -29,39 +30,45 @@ public class FileProcessor implements Runnable {
 
   private final LinkedBlockingQueue<File> filesQueue;
   private final GiftCertificateMapper certificateMapper;
+  private final FileMapper fileMapper;
   private final File errorFolder;
   private static final ReentrantLock LOCK = new ReentrantLock();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FileProcessor.class);
 
   public FileProcessor(LinkedBlockingQueue<File> filesQueue, GiftCertificateMapper certificateMapper,
-      File errorFolder) {
+      FileMapper fileMapper, File errorFolder) {
     this.filesQueue = filesQueue;
     this.certificateMapper = certificateMapper;
     this.errorFolder = errorFolder;
+    this.fileMapper = fileMapper;
   }
 
   @Override
   public void run() {
     File file = null;
     try {
-      while ((file = filesQueue.poll(100, TimeUnit.MILLISECONDS)) != null) {
+      while ((file = filesQueue.poll(2, TimeUnit.SECONDS)) != null) {
         processFile(file);
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       LOGGER.warn("File thread was interrupted");
     } catch (IOException e) {
-      LOGGER.error("Error processing file {} \n{}", file.getAbsolutePath(), e);
+      LOGGER.error("Error processing file {}", file.getAbsolutePath(), e);
     }
   }
 
   private void processFile(File file) throws IOException {
     if (file != null) {
       try {
-        tryToReadFile(file);
+        if (file.exists()) {
+          tryToReadFile(file);
+        }
       } catch (JsonParseException | UnrecognizedPropertyException | InvalidFormatException | DataIntegrityViolationException e) {
         moveFileToErrorFolder(file);
+      } finally {
+        fileMapper.deleteByPath(file.getAbsolutePath());
       }
     }
   }

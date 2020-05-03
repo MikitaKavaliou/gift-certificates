@@ -10,8 +10,8 @@ import org.springframework.context.annotation.EnableLoadTimeWeaving;
 public class ApplicationStarter {
 
   public static void main(String[] args) {
-    DynamicInstrumentationLoader.waitForInitialized(); //dynamically attach java agent to jvm if not already present
-    DynamicInstrumentationLoader.initLoadTimeWeavingContext(); //weave all classes before they are loaded as beans
+    DynamicInstrumentationLoader.waitForInitialized();
+    DynamicInstrumentationLoader.initLoadTimeWeavingContext();
     SpringApplication.run(ApplicationStarter.class, args);
   }
 }

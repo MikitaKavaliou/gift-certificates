@@ -38,6 +38,20 @@ CREATE TABLE `gift_certificate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `processing_file`
+--
+
+DROP TABLE IF EXISTS `processing_file`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `processing_file` (
+                                   `processing_file_path` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+                                   PRIMARY KEY (`processing_file_path`),
+                                   UNIQUE KEY `processing_file_path_UNIQUE` (`processing_file_path`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `purchase`
 --
 
