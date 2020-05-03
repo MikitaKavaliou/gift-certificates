@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,24 +33,29 @@ public class FileProcessor implements Runnable {
   private final GiftCertificateMapper certificateMapper;
   private final FileMapper fileMapper;
   private final File errorFolder;
-  private static final ReentrantLock LOCK = new ReentrantLock();
+  private final AtomicBoolean isScanEnded;
 
+  private static final ReentrantLock LOCK = new ReentrantLock();
   private static final Logger LOGGER = LoggerFactory.getLogger(FileProcessor.class);
 
   public FileProcessor(LinkedBlockingQueue<File> filesQueue, GiftCertificateMapper certificateMapper,
-      FileMapper fileMapper, File errorFolder) {
+      FileMapper fileMapper, File errorFolder, AtomicBoolean isScanEnded) {
     this.filesQueue = filesQueue;
     this.certificateMapper = certificateMapper;
-    this.errorFolder = errorFolder;
     this.fileMapper = fileMapper;
+    this.errorFolder = errorFolder;
+    this.isScanEnded = isScanEnded;
   }
 
   @Override
   public void run() {
     File file = null;
     try {
-      while ((file = filesQueue.poll(2, TimeUnit.SECONDS)) != null) {
-        processFile(file);
+      while (!isScanEnded.get() || !filesQueue.isEmpty()) {
+        file = filesQueue.poll(100, TimeUnit.MILLISECONDS);
+        if (file != null) {
+          processFile(file);
+        }
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -62,9 +68,7 @@ public class FileProcessor implements Runnable {
   private void processFile(File file) throws IOException {
     if (file != null) {
       try {
-        if (file.exists()) {
-          tryToReadFile(file);
-        }
+        tryToReadFile(file);
       } catch (JsonParseException | UnrecognizedPropertyException | InvalidFormatException | DataIntegrityViolationException e) {
         moveFileToErrorFolder(file);
       } finally {

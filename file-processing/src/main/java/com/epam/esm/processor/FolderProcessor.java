@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,7 @@ public class FolderProcessor implements Runnable {
   private final LinkedBlockingQueue<File> files;
   private final ApplicationContext context;
   private final FileMapper fileMapper;
+  private final AtomicBoolean isScanEnded;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FolderProcessor.class);
 
@@ -34,13 +36,15 @@ public class FolderProcessor implements Runnable {
       File errorFolder,
       LinkedBlockingQueue<File> files,
       ApplicationContext context,
-      FileMapper fileMapper) {
+      FileMapper fileMapper,
+      AtomicBoolean isScanEnded) {
     this.threadCount = threadCount;
     this.rootFolderPath = rootFolderPath;
     this.errorFolder = errorFolder;
     this.files = files;
     this.context = context;
     this.fileMapper = fileMapper;
+    this.isScanEnded = isScanEnded;
   }
 
   @Override
@@ -48,9 +52,11 @@ public class FolderProcessor implements Runnable {
     File rootFolder = new File(rootFolderPath);
     try {
       createErrorFolder();
+      isScanEnded.set(false);
       loadFiles(rootFolder, true);
       ExecutorService executor = runThreadPool();
       loadFiles(rootFolder, false);
+      isScanEnded.set(true);
       waitForFileProcessing(executor);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -78,8 +84,11 @@ public class FolderProcessor implements Runnable {
       if (!file.isDirectory()) {
         try {
           fileMapper.insert(file.getAbsolutePath());
-          this.files.put(file);
-          LOGGER.info("File {} added to queue", file.getAbsolutePath());
+          if (file.exists()) {
+            this.files.put(file);
+          } else {
+            fileMapper.deleteByPath(file.getAbsolutePath());
+          }
         } catch (DataIntegrityViolationException e) {
           LOGGER.info("File {} already in processing", file.getAbsolutePath());
         }

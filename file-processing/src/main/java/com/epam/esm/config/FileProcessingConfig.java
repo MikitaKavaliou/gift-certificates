@@ -2,6 +2,7 @@ package com.epam.esm.config;
 
 import java.io.File;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,5 +25,10 @@ public class FileProcessingConfig {
   @Bean
   public File errorFolder() {
     return new File(rootFolderPath, errorFolderName);
+  }
+
+  @Bean
+  public AtomicBoolean isScanEnded() {
+    return new AtomicBoolean();
   }
 }
