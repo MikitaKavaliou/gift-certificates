@@ -11,5 +11,5 @@ public interface FileMapper {
   void insert(String path);
 
   @Delete("DELETE FROM processing_file WHERE processing_file_path = #{path}")
-  int deleteByPath(String path);
+  void deleteByPath(String path);
 }

@@ -23,20 +23,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DeadlockLoserDataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 @Component
 @Scope("prototype")
 public class FileProcessor implements Runnable {
 
+  private static final ReentrantLock LOCK = new ReentrantLock();
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileProcessor.class);
   private final LinkedBlockingQueue<File> filesQueue;
   private final GiftCertificateMapper certificateMapper;
   private final FileMapper fileMapper;
   private final File errorFolder;
   private final AtomicBoolean isScanEnded;
-
-  private static final ReentrantLock LOCK = new ReentrantLock();
-  private static final Logger LOGGER = LoggerFactory.getLogger(FileProcessor.class);
 
   public FileProcessor(LinkedBlockingQueue<File> filesQueue, GiftCertificateMapper certificateMapper,
       FileMapper fileMapper, File errorFolder, AtomicBoolean isScanEnded) {
@@ -87,8 +88,18 @@ public class FileProcessor implements Runnable {
   private void moveFileToErrorFolder(File file) throws IOException {
     try {
       LOCK.lock();
+      boolean isMoved;
+      do {
+        try {
+          fileMapper.insert(errorFolder.getAbsolutePath());
+          isMoved = true;
+        } catch (DuplicateKeyException | DeadlockLoserDataAccessException e) {
+          isMoved = false;
+        }
+      } while (!isMoved);
       Files.move(Paths.get(file.getAbsolutePath()), getPathForMovingFile(file), StandardCopyOption.ATOMIC_MOVE);
     } finally {
+      fileMapper.deleteByPath(errorFolder.getAbsolutePath());
       LOCK.unlock();
     }
   }

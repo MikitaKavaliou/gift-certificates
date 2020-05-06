@@ -14,12 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FolderProcessor implements Runnable {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(FolderProcessor.class);
   private final int threadCount;
   private final String rootFolderPath;
   private final File errorFolder;
@@ -27,8 +28,6 @@ public class FolderProcessor implements Runnable {
   private final ApplicationContext context;
   private final FileMapper fileMapper;
   private final AtomicBoolean isScanEnded;
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(FolderProcessor.class);
 
   public FolderProcessor(
       @Value("${processing-threads-count}") int threadCount,
@@ -54,10 +53,12 @@ public class FolderProcessor implements Runnable {
       createErrorFolder();
       isScanEnded.set(false);
       loadFiles(rootFolder, true);
-      ExecutorService executor = runThreadPool();
-      loadFiles(rootFolder, false);
-      isScanEnded.set(true);
-      waitForFileProcessing(executor);
+      if (!files.isEmpty()) {
+        ExecutorService executor = runThreadPool();
+        loadFiles(rootFolder, false);
+        isScanEnded.set(true);
+        waitForFileProcessing(executor);
+      }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       LOGGER.warn("Scan thread was interrupted");
@@ -89,7 +90,7 @@ public class FolderProcessor implements Runnable {
           } else {
             fileMapper.deleteByPath(file.getAbsolutePath());
           }
-        } catch (DataIntegrityViolationException e) {
+        } catch (DuplicateKeyException e) {
           LOGGER.info("File {} already in processing", file.getAbsolutePath());
         }
       } else if (file.isDirectory() && !file.getName().equals(errorFolder.getName())) {
