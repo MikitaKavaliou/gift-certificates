@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class FolderProcessor implements Runnable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FolderProcessor.class);
   private final int threadCount;
   private final String rootFolderPath;
   private final File errorFolder;
@@ -28,6 +27,8 @@ public class FolderProcessor implements Runnable {
   private final ApplicationContext context;
   private final FileMapper fileMapper;
   private final AtomicBoolean isScanEnded;
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(FolderProcessor.class);
 
   public FolderProcessor(
       @Value("${processing-threads-count}") int threadCount,

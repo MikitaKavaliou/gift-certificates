@@ -38,6 +38,7 @@ public class FileProcessor implements Runnable {
   private final FileMapper fileMapper;
   private final File errorFolder;
   private final AtomicBoolean isScanEnded;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   public FileProcessor(LinkedBlockingQueue<File> filesQueue, GiftCertificateMapper certificateMapper,
       FileMapper fileMapper, File errorFolder, AtomicBoolean isScanEnded) {
@@ -79,7 +80,6 @@ public class FileProcessor implements Runnable {
   }
 
   private void tryToReadFile(File file) throws IOException {
-    ObjectMapper objectMapper = new ObjectMapper();
     List<GiftCertificate> certificates = Arrays.asList(objectMapper.readValue(file, GiftCertificate[].class));
     certificateMapper.insertList(certificates);
     file.delete();

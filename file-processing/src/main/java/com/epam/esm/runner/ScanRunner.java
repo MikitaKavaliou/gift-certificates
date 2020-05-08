@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScanRunner {
 
-  @Value("${file-scan-delay}")
   private final double scanDelay;
   private final FolderProcessor folderProcessor;
 
