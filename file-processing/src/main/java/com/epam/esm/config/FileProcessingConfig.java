@@ -28,7 +28,7 @@ public class FileProcessingConfig {
   }
 
   @Bean
-  public AtomicBoolean isScanEnded() {
+  public AtomicBoolean hasFolderProcessorFinishedScanning() {
     return new AtomicBoolean();
   }
 }

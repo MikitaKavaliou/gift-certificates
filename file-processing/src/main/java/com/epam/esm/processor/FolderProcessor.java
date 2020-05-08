@@ -26,7 +26,7 @@ public class FolderProcessor implements Runnable {
   private final LinkedBlockingQueue<File> files;
   private final ApplicationContext context;
   private final FileMapper fileMapper;
-  private final AtomicBoolean isScanEnded;
+  private final AtomicBoolean hasFolderProcessorFinishedScanning;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FolderProcessor.class);
 
@@ -37,14 +37,14 @@ public class FolderProcessor implements Runnable {
       LinkedBlockingQueue<File> files,
       ApplicationContext context,
       FileMapper fileMapper,
-      AtomicBoolean isScanEnded) {
+      AtomicBoolean hasFolderProcessorFinishedScanning) {
     this.threadCount = threadCount;
     this.rootFolderPath = rootFolderPath;
     this.errorFolder = errorFolder;
     this.files = files;
     this.context = context;
     this.fileMapper = fileMapper;
-    this.isScanEnded = isScanEnded;
+    this.hasFolderProcessorFinishedScanning = hasFolderProcessorFinishedScanning;
   }
 
   @Override
@@ -52,12 +52,12 @@ public class FolderProcessor implements Runnable {
     File rootFolder = new File(rootFolderPath);
     try {
       createErrorFolder();
-      isScanEnded.set(false);
+      hasFolderProcessorFinishedScanning.set(false);
       loadFiles(rootFolder, true);
       if (!files.isEmpty()) {
         ExecutorService executor = runThreadPool();
         loadFiles(rootFolder, false);
-        isScanEnded.set(true);
+        hasFolderProcessorFinishedScanning.set(true);
         waitForFileProcessing(executor);
       }
     } catch (InterruptedException e) {

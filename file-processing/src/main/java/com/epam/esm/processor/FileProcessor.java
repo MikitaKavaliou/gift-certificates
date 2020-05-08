@@ -37,23 +37,23 @@ public class FileProcessor implements Runnable {
   private final GiftCertificateMapper certificateMapper;
   private final FileMapper fileMapper;
   private final File errorFolder;
-  private final AtomicBoolean isScanEnded;
+  private final AtomicBoolean hasFolderProcessorFinishedScanning;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   public FileProcessor(LinkedBlockingQueue<File> filesQueue, GiftCertificateMapper certificateMapper,
-      FileMapper fileMapper, File errorFolder, AtomicBoolean isScanEnded) {
+      FileMapper fileMapper, File errorFolder, AtomicBoolean hasFolderProcessorFinishedScanning) {
     this.filesQueue = filesQueue;
     this.certificateMapper = certificateMapper;
     this.fileMapper = fileMapper;
     this.errorFolder = errorFolder;
-    this.isScanEnded = isScanEnded;
+    this.hasFolderProcessorFinishedScanning = hasFolderProcessorFinishedScanning;
   }
 
   @Override
   public void run() {
     File file = null;
     try {
-      while (!isScanEnded.get() || !filesQueue.isEmpty()) {
+      while (!hasFolderProcessorFinishedScanning.get() || !filesQueue.isEmpty()) {
         file = filesQueue.poll(100, TimeUnit.MILLISECONDS);
         if (file != null) {
           processFile(file);
