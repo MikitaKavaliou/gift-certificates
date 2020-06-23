@@ -1,0 +1,11 @@
+<!DOCTYPE aspectj PUBLIC
+  "-//AspectJ//DTD//EN" "http://www.eclipse.org/aspectj/dtd/aspectj.dtd">
+<aspectj>
+  <weaver options="-verbose -showWeaveInfo">
+    <include within="com.epam.esm.processor.FileProcessor"/>
+    <include within="com.epam.esm.aspect.FileProcessingLoggingAspect"/>
+  </weaver>
+  <aspects>
+    <aspect name="com.epam.esm.aspect.FileProcessingLoggingAspect"/>
+  </aspects>
+</aspectj>

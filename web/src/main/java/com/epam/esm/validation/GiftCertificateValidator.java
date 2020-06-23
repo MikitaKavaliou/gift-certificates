@@ -10,7 +10,9 @@ import org.apache.commons.lang3.StringUtils;
 public class GiftCertificateValidator {
 
   private static final int MAX_CERTIFICATE_NAME_LENGTH = 30;
+  private static final int MIN_CERTIFICATE_NAME_LENGTH = 6;
   private static final int MAX_CERTIFICATE_DESCRIPTION_LENGTH = 1000;
+  private static final int MIN_CERTIFICATE_DESCRIPTION_LENGTH = 12;
   private static final double MIN_CERTIFICATE_PRICE = 0;
   private static final double MAX_CERTIFICATE_PRICE = 10000;
   private static final int MIN_CERTIFICATE_DURATION = 0;
@@ -38,11 +40,13 @@ public class GiftCertificateValidator {
   }
 
   public static boolean isValidGiftCertificateName(String name) {
-    return !name.isEmpty() && name.length() <= MAX_CERTIFICATE_NAME_LENGTH;
+    return !name.isEmpty() && name.length() <= MAX_CERTIFICATE_NAME_LENGTH
+        && name.length() >= MIN_CERTIFICATE_NAME_LENGTH;
   }
 
   public static boolean isValidGiftCertificateDescription(String description) {
-    return !description.isEmpty() && description.length() <= MAX_CERTIFICATE_DESCRIPTION_LENGTH;
+    return !description.isEmpty() && description.length() <= MAX_CERTIFICATE_DESCRIPTION_LENGTH
+        && description.length() >= MIN_CERTIFICATE_DESCRIPTION_LENGTH;
   }
 
   public static boolean isValidCertificatePrice(BigDecimal price) {

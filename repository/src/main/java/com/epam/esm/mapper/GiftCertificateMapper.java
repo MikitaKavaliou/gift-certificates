@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
@@ -24,6 +25,16 @@ public interface GiftCertificateMapper {
   @Insert("INSERT INTO gift_certificate (name, description, price, duration) VALUES (#{name}, #{description}, " +
       "#{price}, #{duration})")
   void insert(GiftCertificate certificate);
+
+  @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "gift_certificate_id")
+  @Insert({
+      "<script>",
+      "INSERT INTO gift_certificate (name, description, price, duration) VALUES",
+      "      <foreach item='item' index='index' collection='certificates' separator=','>",
+      "        (#{item.name}, #{item.description}, #{item.price}, #{item.duration})",
+      "      </foreach>",
+      "</script>"})
+  void insertList(@Param("certificates")List<GiftCertificate> certificates);
 
   @Insert({
       "<script>",
@@ -90,8 +101,8 @@ public interface GiftCertificateMapper {
       " </if>",
       "<where>",
       "      <if test=\"parameters.searchValue!=null\">",
-      "         G.name LIKE CONCAT('%', #{parameters.searchValue},'%')",
-      "         OR G.description LIKE CONCAT('%', #{parameters.searchValue},'%')",
+      "         (G.name LIKE CONCAT('%', #{parameters.searchValue},'%')",
+      "         OR G.description LIKE CONCAT('%', #{parameters.searchValue},'%'))",
       "      </if>",
       "      <if test=\"parameters.minPrice!=null\">",
       "         AND G.price &gt;= #{parameters.minPrice} ",
@@ -146,8 +157,8 @@ public interface GiftCertificateMapper {
       " </if>",
       "<where>",
       "      <if test=\"parameters.searchValue!=null\">",
-      "         G.name LIKE CONCAT('%', #{parameters.searchValue},'%')",
-      "         OR G.description LIKE CONCAT('%', #{parameters.searchValue},'%')",
+      "         (G.name LIKE CONCAT('%', #{parameters.searchValue},'%')",
+      "         OR G.description LIKE CONCAT('%', #{parameters.searchValue},'%'))",
       "      </if>",
       "      <if test=\"parameters.minPrice!=null\">",
       "         AND G.price &gt;= #{parameters.minPrice} ",
