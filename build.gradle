@@ -9,9 +9,12 @@ subprojects {
     targetCompatibility = 11
     repositories {
         mavenCentral()
+        maven {
+            url "https://invesdwin.de/artifactory/invesdwin-oss-remote"
+        }
     }
 }
 allprojects {
-    group "com.epam"
+    group "com.epam.esm"
     version "1.0-SNAPSHOT"
 }

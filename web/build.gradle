@@ -6,6 +6,8 @@ plugins {
 }
 dependencies {
     api project(":service")
+    api project(":file-processing")
+    implementation "de.invesdwin:invesdwin-instrument:1.0.7"
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude module: "spring-boot-starter-tomcat"
     }
@@ -35,4 +37,4 @@ task copyWebApp(type: Copy, dependsOn: appNpmRunBuild) {
     into "${rootProject.projectDir}/web/build/resources/main/public/."
 }
 
-compileJava.dependsOn copyWebApp
+//compileJava.dependsOn copyWebApp

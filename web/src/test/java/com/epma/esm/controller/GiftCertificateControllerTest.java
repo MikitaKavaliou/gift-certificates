@@ -399,8 +399,6 @@ public class GiftCertificateControllerTest {
         .body(matchesJsonSchemaInClasspath(CERTIFICATE_OBJECT_SCHEMA_NAME).using(jsonSchemaFactory));
   }
 
-
-
   @Test
   public void deleteCertificateUnauthorizedReturnsExceptionObject() {
     given()
